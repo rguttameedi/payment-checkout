@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Payment Checkout</title>
+    <style>
+        /* ============================================
+           BASIC STYLING
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ============================================
+           PAYMENT FORM CONTAINER
+           ============================================ */
+        .payment-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .payment-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .payment-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* ============================================
+           SECTION HEADERS
+           ============================================ */
+        .section-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        /* ============================================
+           FORM FIELDS
+           ============================================ */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Two column layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Three column layout */
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* ============================================
+           PAYMENT BUTTON
+           ============================================ */
+        .pay-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .pay-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================================
+           LOADING SPINNER
+           ============================================ */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================
+           MESSAGE DISPLAY
+           ============================================ */
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ============================================
+           SECURITY BADGE
+           ============================================ */
+        .security-badge {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .security-badge::before {
+            content: "🔒";
+            margin-right: 5px;
+        }
+
+        /* ============================================
+           AMOUNT DISPLAY
+           ============================================ */
+        .amount-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .amount-display .label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .amount-display .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Payment Header -->
+        <div class="payment-header">
+            <h1>💳 Enhanced Checkout</h1>
+            <p>Complete payment form with billing address</p>
+        </div>
+
+        <!-- Amount Display -->
+        <div class="amount-display">
+            <div class="label">Total Amount</div>
+            <div class="amount" id="displayAmount">$10.00</div>
+        </div>
+
+        <!-- Payment Form -->
+        <form id="paymentForm">
+            <!-- ========== CONTACT INFORMATION ========== -->
+            <div class="section-header">📧 Contact Information</div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="john.doe@example.com"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                    type="tel"
+                    id="phone"
+                    placeholder="(555) 123-4567"
+                >
+            </div>
+
+            <!-- ========== PAYMENT DETAILS ========== -->
+            <div class="section-header">💳 Payment Details</div>
+
+            <div class="form-group">
+                <label for="cardholderName">Cardholder Name *</label>
+                <input
+                    type="text"
+                    id="cardholderName"
+                    placeholder="John Doe"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="cardNumber">Card Number *</label>
+                <input
+                    type="text"
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    required
+                >
+            </div>
+
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label for="expiryMonth">Expiry Month *</label>
+                    <input
+                        type="text"
+                        id="expiryMonth"
+                        placeholder="MM"
+                        maxlength="2"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="expiryYear">Year *</label>
+                    <input
+                        type="text"
+                        id="expiryYear"
+                        placeholder="YYYY"
+                        maxlength="4"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="cvv">CVV *</label>
+                    <input
+                        type="text"
+                        id="cvv"
+                        placeholder="123"
+                        maxlength="4"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- ========== BILLING ADDRESS ========== -->
+            <div class="section-header">🏠 Billing Address</div>
+
+            <div class="form-group">
+                <label for="address1">Street Address *</label>
+                <input
+                    type="text"
+                    id="address1"
+                    placeholder="123 Main Street"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="address2">Apartment, Suite, etc. (Optional)</label>
+                <input
+                    type="text"
+                    id="address2"
+                    placeholder="Apt 4B"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City *</label>
+                    <input
+                        type="text"
+                        id="city"
+                        placeholder="San Francisco"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="state">State *</label>
+                    <select id="state" required>
+                        <option value="">Select State</option>
+                        <option value="AL">Alabama</option>
+                        <option value="AK">Alaska</option>
+                        <option value="AZ">Arizona</option>
+                        <option value="CA">California</option>
+                        <option value="FL">Florida</option>
+                        <option value="NY">New York</option>
+                        <option value="TX">Texas</option>
+                        <!-- Add more states as needed -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="zipCode">ZIP Code *</label>
+                    <input
+                        type="text"
+                        id="zipCode"
+                        placeholder="94105"
+                        maxlength="10"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="country">Country *</label>
+                    <select id="country" required>
+                        <option value="US">United States</option>
+                        <option value="CA">Canada</option>
+                        <option value="GB">United Kingdom</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ========== AMOUNT ========== -->
+            <div class="section-header">💰 Payment Amount</div>
+
+            <div class="form-group">
+                <label for="amount">Amount (USD) *</label>
+                <input
+                    type="text"
+                    id="amount"
+                    placeholder="10.00"
+                    value="10.00"
+                    required
+                >
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="pay-button" id="payButton">
+                <span id="buttonText">Complete Payment</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+
+        <!-- Message Display -->
+        <div class="message" id="message"></div>
+
+        <!-- Security Badge -->
+        <div class="security-badge">
+            Secured by Cybersource | 256-bit SSL Encryption
+        </div>
+    </div>
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <script>
+        // Get form elements
+        const form = document.getElementById('paymentForm');
+        const payButton = document.getElementById('payButton');
+        const buttonText = document.getElementById('buttonText');
+        const spinner = document.getElementById('spinner');
+        const messageDiv = document.getElementById('message');
+        const amountInput = document.getElementById('amount');
+        const displayAmount = document.getElementById('displayAmount');
+
+        // Update display amount when user changes it
+        amountInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (value && !isNaN(value)) {
+                displayAmount.textContent = '$' + parseFloat(value).toFixed(2);
+            }
+        });
+
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Format phone number
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+            } else if (value.length >= 3) {
+                value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+            }
+            e.target.value = value;
+        });
+
+        // Only allow numbers in numeric fields
+        ['cardNumber', 'expiryMonth', 'expiryYear', 'cvv', 'zipCode'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show loading state
+            payButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+            messageDiv.style.display = 'none';
+
+            // Get form values
+            const paymentData = {
+                // Contact Info
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+
+                // Card Info
+                cardholderName: document.getElementById('cardholderName').value,
+                cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+                expiryMonth: document.getElementById('expiryMonth').value.padStart(2, '0'),
+                expiryYear: document.getElementById('expiryYear').value,
+                cvv: document.getElementById('cvv').value,
+
+                // Billing Address
+                address1: document.getElementById('address1').value,
+                address2: document.getElementById('address2').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value,
+                country: document.getElementById('country').value,
+
+                // Amount
+                amount: document.getElementById('amount').value
+            };
+
+            try {
+                // Send payment request to server
+                const response = await fetch('/create-payment-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                // Show result message
+                if (result.success) {
+                    showMessage('success', '✅ ' + result.message + ' Transaction ID: ' + result.transactionId);
+                    form.reset(); // Clear the form
+                    displayAmount.textContent = '$0.00';
+                } else {
+                    showMessage('error', '❌ ' + (result.error || 'Payment failed. Please try again.'));
+                }
+            } catch (error) {
+                showMessage('error', '❌ Network error. Please check your connection.');
+            } finally {
+                // Reset button state
+                payButton.disabled = false;
+                buttonText.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Helper function to show messages
+        function showMessage(type, text) {
+            messageDiv.className = 'message ' + type;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>

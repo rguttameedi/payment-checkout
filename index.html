@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Checkout</title>
+    <style>
+        /* ============================================
+           BASIC STYLING
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ============================================
+           PAYMENT FORM CONTAINER (IFRAME-LIKE STYLE)
+           ============================================ */
+        .payment-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .payment-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .payment-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* ============================================
+           FORM FIELDS
+           ============================================ */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Two column layout for expiry and CVV */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* ============================================
+           PAYMENT BUTTON
+           ============================================ */
+        .pay-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .pay-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================================
+           LOADING SPINNER
+           ============================================ */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================
+           MESSAGE DISPLAY
+           ============================================ */
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ============================================
+           SECURITY BADGE
+           ============================================ */
+        .security-badge {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .security-badge::before {
+            content: "🔒";
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Payment Header -->
+        <div class="payment-header">
+            <h1>💳 Secure Checkout</h1>
+            <p>Enter your payment details below</p>
+        </div>
+
+        <!-- Payment Form -->
+        <form id="paymentForm">
+            <!-- Cardholder Name -->
+            <div class="form-group">
+                <label for="cardholderName">Cardholder Name</label>
+                <input
+                    type="text"
+                    id="cardholderName"
+                    placeholder="John Doe"
+                    required
+                >
+            </div>
+
+            <!-- Card Number -->
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input
+                    type="text"
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    required
+                >
+            </div>
+
+            <!-- Expiry and CVV -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="expiryMonth">Expiry Month</label>
+                    <input
+                        type="text"
+                        id="expiryMonth"
+                        placeholder="MM"
+                        maxlength="2"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="expiryYear">Expiry Year</label>
+                    <input
+                        type="text"
+                        id="expiryYear"
+                        placeholder="YYYY"
+                        maxlength="4"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input
+                        type="text"
+                        id="cvv"
+                        placeholder="123"
+                        maxlength="4"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input
+                        type="text"
+                        id="amount"
+                        placeholder="10.00"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="pay-button" id="payButton">
+                <span id="buttonText">Pay Now</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+
+        <!-- Message Display -->
+        <div class="message" id="message"></div>
+
+        <!-- Security Badge -->
+        <div class="security-badge">
+            Secured by Cybersource
+        </div>
+    </div>
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <script>
+        // Get form elements
+        const form = document.getElementById('paymentForm');
+        const payButton = document.getElementById('payButton');
+        const buttonText = document.getElementById('buttonText');
+        const spinner = document.getElementById('spinner');
+        const messageDiv = document.getElementById('message');
+
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Only allow numbers in numeric fields
+        ['cardNumber', 'expiryMonth', 'expiryYear', 'cvv'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show loading state
+            payButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+            messageDiv.style.display = 'none';
+
+            // Get form values
+            const paymentData = {
+                cardholderName: document.getElementById('cardholderName').value,
+                cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+                expiryMonth: document.getElementById('expiryMonth').value.padStart(2, '0'),
+                expiryYear: document.getElementById('expiryYear').value,
+                cvv: document.getElementById('cvv').value,
+                amount: document.getElementById('amount').value
+            };
+
+            try {
+                // Send payment request to server
+                const response = await fetch('/create-payment-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                // Show result message
+                if (result.success) {
+                    showMessage('success', result.message + ' Transaction ID: ' + result.transactionId);
+                    form.reset(); // Clear the form
+                } else {
+                    showMessage('error', result.error || 'Payment failed. Please try again.');
+                }
+            } catch (error) {
+                showMessage('error', 'Network error. Please check your connection.');
+            } finally {
+                // Reset button state
+                payButton.disabled = false;
+                buttonText.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Helper function to show messages
+        function showMessage(type, text) {
+            messageDiv.className = 'message ' + type;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
