@@ -8,6 +8,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const path = require('path');
 const https = require('https');
+const fs = require('fs').promises;
 
 // Create Express app
 const app = express();
@@ -56,18 +57,66 @@ function generateSignature(method, resourcePath, body) {
 }
 
 // ============================================
+// HELPER FUNCTION: Save Transaction History
+// ============================================
+async function saveTransaction(transactionData) {
+  try {
+    const filePath = path.join(__dirname, 'transactions.json');
+    let transactions = [];
+
+    // Read existing transactions
+    try {
+      const data = await fs.readFile(filePath, 'utf8');
+      transactions = JSON.parse(data);
+    } catch (err) {
+      // File doesn't exist yet, start with empty array
+      transactions = [];
+    }
+
+    // Add new transaction
+    transactions.push(transactionData);
+
+    // Save back to file
+    await fs.writeFile(filePath, JSON.stringify(transactions, null, 2));
+    console.log('✅ Transaction saved to history');
+  } catch (error) {
+    console.error('⚠️ Failed to save transaction:', error.message);
+  }
+}
+
+// ============================================
 // ENDPOINT: Create Payment Token
 // ============================================
 app.post('/create-payment-token', async (req, res) => {
   try {
     const {
-      cardNumber, expiryMonth, expiryYear, cvv, cardholderName, amount,
-      email, phone, address1, address2, city, state, zipCode, country
+      // Payment type
+      paymentType,
+
+      // Card fields
+      nameOnCard, cardNumber, expiryMonth, expiryYear, cvv,
+
+      // ACH fields
+      accountHolderName, routingNumber, accountNumber, accountType,
+
+      // Common fields
+      firstName, lastName, email, phone, dob, payorNickName,
+      address1, address2, city, state, zipCode, country, amount
     } = req.body;
 
-    // Validate required fields
-    if (!cardNumber || !expiryMonth || !expiryYear || !cvv || !amount) {
-      return res.status(400).json({ error: 'Missing required payment fields' });
+    // Validate required fields based on payment type
+    if (paymentType === 'card') {
+      if (!cardNumber || !expiryMonth || !expiryYear || !cvv) {
+        return res.status(400).json({ error: 'Missing required card fields' });
+      }
+    } else if (paymentType === 'ach') {
+      if (!routingNumber || !accountNumber || !accountType) {
+        return res.status(400).json({ error: 'Missing required ACH fields' });
+      }
+    }
+
+    if (!amount || !firstName || !lastName || !email) {
+      return res.status(400).json({ error: 'Missing required common fields' });
     }
 
     // Prepare the payment request for Cybersource
@@ -78,22 +127,15 @@ app.post('/create-payment-token', async (req, res) => {
       processingInformation: {
         capture: false // Set to true to immediately capture the payment
       },
-      paymentInformation: {
-        card: {
-          number: cardNumber,
-          expirationMonth: expiryMonth,
-          expirationYear: expiryYear,
-          securityCode: cvv
-        }
-      },
+      paymentInformation: {},
       orderInformation: {
         amountDetails: {
           totalAmount: amount,
           currency: 'USD'
         },
         billTo: {
-          firstName: cardholderName?.split(' ')[0] || 'Customer',
-          lastName: cardholderName?.split(' ').slice(1).join(' ') || 'Name',
+          firstName: firstName || 'Customer',
+          lastName: lastName || 'Name',
           address1: address1 || '1 Market St',
           address2: address2 || '',
           locality: city || 'San Francisco',
@@ -101,10 +143,30 @@ app.post('/create-payment-token', async (req, res) => {
           postalCode: zipCode || '94105',
           country: country || 'US',
           email: email || 'customer@example.com',
-          phoneNumber: phone || ''
+          phoneNumber: phone || '',
+          dateOfBirth: dob || ''
         }
       }
     };
+
+    // Add payment method specific data
+    if (paymentType === 'card') {
+      paymentData.paymentInformation.card = {
+        number: cardNumber,
+        expirationMonth: expiryMonth,
+        expirationYear: expiryYear,
+        securityCode: cvv
+      };
+    } else if (paymentType === 'ach') {
+      // For ACH payments (Note: Cybersource might need different endpoint/setup for ACH)
+      paymentData.paymentInformation.bank = {
+        account: {
+          number: accountNumber,
+          type: accountType
+        },
+        routingNumber: routingNumber
+      };
+    }
 
     const requestBody = JSON.stringify(paymentData);
     const resourcePath = '/pts/v2/payments';
@@ -132,12 +194,37 @@ app.post('/create-payment-token', async (req, res) => {
       })
     });
 
+    // Save transaction to history
+    const transaction = {
+      transactionId: response.data.id,
+      paymentType: paymentType || 'card',
+      amount: amount,
+      currency: 'USD',
+      status: response.data.status,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      payorNickName: payorNickName || '',
+      // Masked payment details for security
+      maskedPaymentInfo: paymentType === 'card'
+        ? `Card ending in ${cardNumber?.slice(-4)}`
+        : `Account ending in ${accountNumber?.slice(-4)}`,
+      timestamp: new Date().toISOString(),
+      billingAddress: {
+        address1, address2, city, state, zipCode, country
+      }
+    };
+
+    // Save to transaction history file
+    await saveTransaction(transaction);
+
     // Return success response
     res.json({
       success: true,
       transactionId: response.data.id,
       status: response.data.status,
-      message: 'Payment processed successfully!'
+      paymentType: paymentType,
+      message: `${paymentType === 'card' ? 'Card' : 'ACH'} payment processed successfully!`
     });
 
   } catch (error) {
@@ -153,6 +240,20 @@ app.post('/create-payment-token', async (req, res) => {
       error: error.response?.data?.message || error.response?.data?.reason || 'Payment processing failed',
       details: error.response?.data
     });
+  }
+});
+
+// ============================================
+// ENDPOINT: Get Transaction History
+// ============================================
+app.get('/transactions', async (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'transactions.json');
+    const data = await fs.readFile(filePath, 'utf8');
+    const transactions = JSON.parse(data);
+    res.json({ success: true, transactions });
+  } catch (error) {
+    res.json({ success: true, transactions: [] });
   }
 });
 
