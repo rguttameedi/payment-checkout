@@ -1,0 +1,212 @@
+/* Admin Container */
+.admin-container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Properties Grid */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.property-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.property-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.property-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.property-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.property-type {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.property-type.apartment {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.property-type.house {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.property-type.condo {
+  background: #fff9e6;
+  color: #e65100;
+}
+
+.property-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-icon {
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+
+.detail-text {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.property-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.property-description {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.6;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.property-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Tenant Name Cell */
+.tenant-name-cell strong {
+  display: block;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.tenant-name {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.tenant-email {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.property-name {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.unit-number {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.unit-badge {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .properties-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .property-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .property-actions {
+    flex-direction: column;
+  }
+
+  .property-actions .btn {
+    width: 100%;
+  }
+
+  .data-table {
+    font-size: 0.75rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem 0.25rem;
+  }
+
+  /* Hide some columns on mobile */
+  .data-table th:nth-child(n+4),
+  .data-table td:nth-child(n+4) {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .property-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .property-stats {
+    grid-template-columns: 1fr;
+  }
+}

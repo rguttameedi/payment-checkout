@@ -134,3 +134,26 @@ dist
 
 # Transaction history (don't commit sensitive data)
 transactions.json
+
+# React build output
+client/build/
+
+# Database backups
+*.sql.backup
+database/backups/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Local development databases
+*.db
+*.sqlite
+*.sqlite3

@@ -1,0 +1,198 @@
+/* AutoPay Container */
+.autopay-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Status Card */
+.status-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.status-card.active {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #66bb6a;
+}
+
+.status-card.inactive {
+  background: linear-gradient(135deg, #fff9e6 0%, #ffe0b2 100%);
+  border: 2px solid #ffa726;
+}
+
+.status-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.status-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.status-content p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Benefits Card */
+.benefits-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.benefits-card.highlight {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #42a5f5;
+}
+
+.benefits-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+}
+
+.benefits-list li {
+  padding: 0.5rem 0;
+  font-size: 0.9375rem;
+  color: #333;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.benefit-item {
+  text-align: center;
+}
+
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.benefit-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.benefit-item p {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  padding: 2rem;
+}
+
+.cta-subtitle {
+  margin-top: 1rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+/* Steps List */
+.steps-list {
+  list-style: none;
+  counter-reset: step-counter;
+  padding: 0;
+}
+
+.steps-list li {
+  counter-increment: step-counter;
+  padding: 1rem 0;
+  padding-left: 3rem;
+  position: relative;
+  font-size: 0.9375rem;
+  color: #333;
+}
+
+.steps-list li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  top: 1rem;
+  width: 2rem;
+  height: 2rem;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.steps-list li strong {
+  color: #1a1a1a;
+}
+
+/* Danger Zone */
+.danger-zone {
+  background: #fde8e8;
+  border: 2px solid #ef5350;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.danger-zone h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #c62828;
+  margin-bottom: 0.75rem;
+}
+
+.danger-zone p {
+  font-size: 0.875rem;
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .status-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .steps-list li {
+    padding-left: 2.5rem;
+  }
+
+  .steps-list li::before {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+  }
+}
