@@ -41,29 +41,38 @@ exports.getDashboard = async (req, res, next) => {
     const currentMonth = today.getMonth() + 1;
     const currentYear = today.getFullYear();
 
+    // Determine which month/year we should check for payment
+    let paymentCheckMonth = currentMonth;
+    let paymentCheckYear = currentYear;
+
     let nextPaymentDueDate = new Date(currentYear, currentMonth - 1, activeLease.rent_due_day);
     if (nextPaymentDueDate < today) {
       // If this month's due date passed, next payment is next month
       nextPaymentDueDate = new Date(currentYear, currentMonth, activeLease.rent_due_day);
+      paymentCheckMonth = currentMonth + 1;
+      if (paymentCheckMonth > 12) {
+        paymentCheckMonth = 1;
+        paymentCheckYear = currentYear + 1;
+      }
     }
 
-    // Calculate total paid for current month (including partial payments)
-    const currentMonthPayments = await RentPayment.findAll({
+    // Calculate total paid for the payment period (including partial payments)
+    const periodPayments = await RentPayment.findAll({
       where: {
         lease_id: activeLease.id,
-        payment_month: currentMonth,
-        payment_year: currentYear,
+        payment_month: paymentCheckMonth,
+        payment_year: paymentCheckYear,
         payment_status: { [Op.in]: ['completed', 'authorized', 'captured'] }
       }
     });
 
-    // Sum all payments for the current month
-    const totalPaidThisMonth = currentMonthPayments.reduce((sum, payment) => {
+    // Sum all payments for the payment period
+    const totalPaidThisPeriod = periodPayments.reduce((sum, payment) => {
       return sum + parseFloat(payment.total_amount || 0);
     }, 0);
 
     // Calculate remaining balance
-    const remainingBalance = Math.max(0, parseFloat(activeLease.monthly_rent) - totalPaidThisMonth);
+    const remainingBalance = Math.max(0, parseFloat(activeLease.monthly_rent) - totalPaidThisPeriod);
     const isFullyPaid = remainingBalance === 0;
 
     // Get recent payments (last 3)
@@ -99,7 +108,7 @@ exports.getDashboard = async (req, res, next) => {
           dueDate: nextPaymentDueDate,
           amount: remainingBalance,
           totalDue: activeLease.monthly_rent,
-          amountPaid: totalPaidThisMonth,
+          amountPaid: totalPaidThisPeriod,
           isPaid: isFullyPaid,
           daysUntilDue: Math.ceil((nextPaymentDueDate - today) / (1000 * 60 * 60 * 24))
         },

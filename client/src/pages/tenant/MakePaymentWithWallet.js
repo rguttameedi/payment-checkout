@@ -7,7 +7,13 @@ import Layout from '../../components/layout/Layout';
 import SharedWalletDropdown from '../../components/wallet/SharedWalletDropdown';
 import '../../assets/css/MakePayment.css';
 
-function MakePayment() {
+/**
+ * Make Payment Page with Shared Wallet UI Integration
+ *
+ * This page demonstrates the integration of the Shared Wallet UI
+ * for payment method selection and management.
+ */
+function MakePaymentWithWallet() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -15,13 +21,11 @@ function MakePayment() {
   const [validationErrors, setValidationErrors] = useState({});
 
   const [leaseInfo, setLeaseInfo] = useState(null);
-  const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [useWalletUI, setUseWalletUI] = useState(true); // Toggle for wallet UI
 
   const [formData, setFormData] = useState({
     lease_id: '',
-    payment_method_id: '',
+    payment_method_token: '', // Using token instead of ID
     amount: '',
     payment_month: new Date().getMonth() + 1,
     payment_year: new Date().getFullYear()
@@ -29,6 +33,7 @@ function MakePayment() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   const fetchData = async () => {
@@ -47,23 +52,10 @@ function MakePayment() {
 
       setLeaseInfo(leaseData);
 
-      // Fetch payment methods
-      const paymentMethodsResponse = await tenantService.getPaymentMethods();
-      const methods = paymentMethodsResponse.data.data || [];
-
-      if (methods.length === 0) {
-        toast.warn('No payment methods on file. Please add a payment method first.');
-        setLoading(false);
-        return;
-      }
-
-      setPaymentMethods(methods);
-
       // Pre-fill form
       setFormData({
         ...formData,
         lease_id: leaseData.id,
-        payment_method_id: methods.find(m => m.is_default)?.id || methods[0]?.id,
         amount: leaseData.monthlyRent || ''
       });
 
@@ -72,6 +64,43 @@ function MakePayment() {
       toast.error(err.response?.data?.error || 'Failed to load payment information');
       setLoading(false);
     }
+  };
+
+  /**
+   * Handle payment method selection from wallet
+   */
+  const handlePaymentSelected = (paymentDetail) => {
+    console.log('🎯 Payment method selected:', paymentDetail);
+
+    setSelectedPayment(paymentDetail);
+
+    // Update form with selected payment token
+    setFormData({
+      ...formData,
+      payment_method_token: paymentDetail.paymentInstrumentToken || paymentDetail.paymentMethodId
+    });
+
+    toast.success(`Payment method selected: ${paymentDetail.paymentMethodText || 'Payment method'}`);
+  };
+
+  /**
+   * Handle new payment method added
+   */
+  const handlePaymentAdded = (paymentDetail) => {
+    console.log('✅ New payment method added:', paymentDetail);
+
+    toast.success(`${paymentDetail.type === 'card' ? 'Card' : 'Bank account'} added successfully!`);
+
+    // Optionally auto-select the newly added payment
+    // The wallet UI should automatically select it
+  };
+
+  /**
+   * Handle wallet errors
+   */
+  const handleWalletError = (error) => {
+    console.error('❌ Wallet error:', error);
+    toast.error(error.message || 'An error occurred with the wallet');
   };
 
   const validateForm = () => {
@@ -83,6 +112,10 @@ function MakePayment() {
 
     if (parseFloat(formData.amount) > parseFloat(leaseInfo?.monthlyRent) * 2) {
       errors.amount = `Amount seems unusually high. Monthly rent is ${formatCurrency(leaseInfo?.monthlyRent)}`;
+    }
+
+    if (!formData.payment_method_token) {
+      errors.payment_method = 'Please select a payment method';
     }
 
     setValidationErrors(errors);
@@ -110,56 +143,11 @@ function MakePayment() {
     }
   };
 
-  /**
-   * Handle payment method selection from wallet UI
-   */
-  const handlePaymentSelected = (paymentDetail) => {
-    console.log('💳 Payment method selected from wallet:', paymentDetail);
-
-    setSelectedPayment(paymentDetail);
-
-    // Extract payment method ID from the token (format: pi_123)
-    const tokenParts = paymentDetail.paymentInstrumentToken?.split('_');
-    const paymentMethodId = tokenParts && tokenParts.length > 1 ? tokenParts[1] : '';
-
-    if (paymentMethodId) {
-      setFormData({
-        ...formData,
-        payment_method_id: paymentMethodId
-      });
-      toast.success(`Payment method selected: ${paymentDetail.paymentMethodText || 'Payment method'}`);
-    }
-  };
-
-  /**
-   * Handle new payment method added via wallet UI
-   */
-  const handlePaymentAdded = (paymentDetail) => {
-    console.log('✅ New payment method added:', paymentDetail);
-    toast.success(`${paymentDetail.type === 'card' ? 'Card' : 'Bank account'} added successfully!`);
-
-    // Refresh payment methods list
-    fetchData();
-  };
-
-  /**
-   * Handle wallet errors
-   */
-  const handleWalletError = (error) => {
-    console.error('❌ Wallet error:', error);
-    toast.error(error.message || 'An error occurred with the wallet');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       toast.error('Please fix validation errors before submitting');
-      return;
-    }
-
-    if (!formData.payment_method_id) {
-      toast.error('Please select a payment method');
       return;
     }
 
@@ -228,15 +216,6 @@ function MakePayment() {
     return `$${parseFloat(amount).toFixed(2)}`;
   };
 
-  const getPaymentMethodDisplay = (method) => {
-    if (method.payment_type === 'card') {
-      return `${method.card_brand || 'Card'} ending in ${method.card_last_four}`;
-    } else if (method.payment_type === 'ach') {
-      return `${method.bank_name || 'Bank Account'} ending in ${method.account_last_four}`;
-    }
-    return 'Unknown';
-  };
-
   const getMonthName = (monthNumber) => {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -279,7 +258,10 @@ function MakePayment() {
       <div className="make-payment-container">
         <div className="page-header">
           <h1>💳 Make a Payment</h1>
-          <p>Submit your rent payment securely</p>
+          <p>Submit your rent payment securely using Shared Wallet UI</p>
+          <div className="integration-badge">
+            <span className="badge badge-new">🆕 Shared Wallet UI Integration</span>
+          </div>
         </div>
 
         <div className="payment-form-card">
@@ -356,29 +338,37 @@ function MakePayment() {
                 )}
                 <small>Standard rent: {formatCurrency(leaseInfo?.monthlyRent)}</small>
               </div>
+            </div>
 
-              {/* Shared Wallet UI - Payment Method Selection */}
-              <div className="form-group wallet-ui-section">
-                <label>Payment Method 🆕</label>
-                <p className="wallet-description">
-                  Select an existing payment method or add a new card/bank account
-                </p>
+            {/* Shared Wallet UI - Payment Method Selection */}
+            <div className="form-section">
+              <h3>💳 Select Payment Method</h3>
+              <p className="section-description">
+                Choose an existing payment method or add a new one using the Shared Wallet UI below.
+              </p>
 
-                <SharedWalletDropdown
-                  environment="localdevelopment"
-                  displayMode="full"
-                  paymentType="all"
-                  onPaymentSelected={handlePaymentSelected}
-                  onPaymentAdded={handlePaymentAdded}
-                  onError={handleWalletError}
-                />
+              {validationErrors.payment_method && (
+                <div className="alert alert-error">
+                  {validationErrors.payment_method}
+                </div>
+              )}
 
-                {selectedPayment && (
-                  <div className="selected-payment-badge">
+              <SharedWalletDropdown
+                environment="localdevelopment"
+                displayMode="full"
+                paymentType="all"
+                onPaymentSelected={handlePaymentSelected}
+                onPaymentAdded={handlePaymentAdded}
+                onError={handleWalletError}
+              />
+
+              {selectedPayment && (
+                <div className="selected-payment-info">
+                  <p>
                     ✅ Selected: <strong>{selectedPayment.paymentMethodText}</strong>
-                  </div>
-                )}
-              </div>
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Payment Summary */}
@@ -390,11 +380,7 @@ function MakePayment() {
               <div className="summary-row">
                 <span>Payment Method:</span>
                 <span>
-                  {selectedPayment
-                    ? selectedPayment.paymentMethodText
-                    : (paymentMethods.find(m => m.id === parseInt(formData.payment_method_id))
-                        ? getPaymentMethodDisplay(paymentMethods.find(m => m.id === parseInt(formData.payment_method_id)))
-                        : 'Select a payment method')}
+                  {selectedPayment ? selectedPayment.paymentMethodText : 'Not selected'}
                 </span>
               </div>
               <div className="summary-row total">
@@ -429,6 +415,10 @@ function MakePayment() {
             <strong>Note:</strong> Your payment will be processed immediately and cannot be canceled once submitted.
             Please ensure all information is correct before proceeding.
           </p>
+          <p className="integration-note">
+            💡 This page uses the <strong>Shared Wallet UI</strong> for payment method management.
+            You can add credit cards or bank accounts directly from this page.
+          </p>
         </div>
 
         {/* Confirmation Modal */}
@@ -450,11 +440,7 @@ function MakePayment() {
                 <div className="confirm-row">
                   <span>Using:</span>
                   <strong>
-                    {selectedPayment
-                      ? selectedPayment.paymentMethodText
-                      : (paymentMethods.find(m => m.id === parseInt(formData.payment_method_id))
-                          ? getPaymentMethodDisplay(paymentMethods.find(m => m.id === parseInt(formData.payment_method_id)))
-                          : 'N/A')}
+                    {selectedPayment ? selectedPayment.paymentMethodText : 'N/A'}
                   </strong>
                 </div>
               </div>
@@ -485,4 +471,4 @@ function MakePayment() {
   );
 }
 
-export default MakePayment;
+export default MakePaymentWithWallet;

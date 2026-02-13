@@ -89,7 +89,7 @@ function AdminDashboard() {
     );
   }
 
-  const { overview, financial, recentPayments } = dashboardData.data;
+  const { overview, financial, recentPayments } = dashboardData;
 
   return (
     <Layout title="Admin Dashboard">

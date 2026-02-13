@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // Base API URL - uses proxy from package.json in development
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// In development, use relative path so React proxy forwards to backend (port 50155)
+// In production, set REACT_APP_API_URL environment variable
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({

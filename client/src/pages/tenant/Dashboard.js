@@ -89,7 +89,7 @@ function TenantDashboard() {
     );
   }
 
-  const { lease, nextPayment, recentPayments, autoPayEnabled } = dashboardData.data;
+  const { lease, nextPayment, recentPayments, autoPayEnabled } = dashboardData;
 
   return (
     <Layout title="Tenant Dashboard">

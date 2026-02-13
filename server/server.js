@@ -15,6 +15,8 @@ const authRoutes = require('./routes/auth');
 const tenantRoutes = require('./routes/tenant');
 const adminRoutes = require('./routes/admin');
 const paymentRoutes = require('./routes/payment');
+const mockWalletBffRoutes = require('./routes/mockWalletBff');
+const sharedWalletRoutes = require('./routes/sharedWallet');
 
 // Import recurring payment processor
 const recurringPaymentProcessor = require('./jobs/recurringPaymentProcessor');
@@ -22,6 +24,12 @@ const recurringPaymentProcessor = require('./jobs/recurringPaymentProcessor');
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Increase header size limit for wallet UI tokens
+const http = require('http');
+const server = http.createServer(app);
+server.maxHeadersCount = 0; // No limit on header count
+app.set('trust proxy', true);
 
 // ============================================
 // SECURITY MIDDLEWARE
@@ -102,6 +110,15 @@ app.use('/api/admin', adminRoutes);
 // Payment processing routes
 app.use('/api/payment', paymentRoutes);
 
+// Mock Wallet BFF routes (for Shared Wallet UI integration)
+app.use('/api/wallet-bff', mockWalletBffRoutes);
+
+// Shared Wallet UI direct routes (matches what the wallet UI component expects)
+app.use('/api/SharedWallet', sharedWalletRoutes);
+
+// UserScoped token endpoint (wallet UI looks for this)
+app.use('/api/UserScoped', mockWalletBffRoutes);
+
 // ============================================
 // ROOT ENDPOINT
 // ============================================
@@ -116,7 +133,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       tenant: '/api/tenant ✅',
       admin: '/api/admin ✅',
-      payment: '/api/payment ✅'
+      payment: '/api/payment ✅',
+      walletBff: '/api/wallet-bff (Mock Shared Wallet BFF) 🆕'
     }
   });
 });
@@ -145,8 +163,8 @@ const startServer = async () => {
       recurringPaymentProcessor.start();
     }
 
-    // Start Express server
-    app.listen(PORT, () => {
+    // Start Express server with increased header limits
+    server.listen(PORT, () => {
       console.log('');
       console.log('════════════════════════════════════════════════');
       console.log('  🚀 Rent Payment API Server Started!');
@@ -189,6 +207,12 @@ const startServer = async () => {
       console.log('   GET    /api/payment/:id             - Get payment status');
       console.log('   POST   /api/payment/:id/refund      - Refund payment (admin)');
       console.log('   POST   /api/payment/webhook         - Cybersource webhook');
+      console.log('');
+      console.log('   🔄 Mock Wallet BFF (Shared Wallet UI):');
+      console.log('   POST   /api/wallet-bff/UserScoped/acquire_user_scoped_token');
+      console.log('   GET    /api/wallet-bff/SharedWallet/wallet');
+      console.log('   POST   /api/wallet-bff/SharedWallet/card');
+      console.log('   POST   /api/wallet-bff/SharedWallet/bankaccount');
       console.log('');
     });
   } catch (error) {

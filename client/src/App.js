@@ -10,7 +10,9 @@ import Register from './pages/Register';
 import TenantDashboard from './pages/tenant/Dashboard';
 import TenantPayments from './pages/tenant/Payments';
 import TenantMakePayment from './pages/tenant/MakePayment';
+import TenantMakePaymentWithWallet from './pages/tenant/MakePaymentWithWallet';
 import TenantPaymentMethods from './pages/tenant/PaymentMethods';
+import TenantPaymentMethodsWithWallet from './pages/tenant/PaymentMethodsWithWallet';
 import TenantAutoPay from './pages/tenant/AutoPay';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProperties from './pages/admin/Properties';
@@ -98,6 +100,11 @@ function App() {
                 <TenantMakePayment />
               </ProtectedRoute>
             } />
+            <Route path="/tenant/make-payment-wallet" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <TenantMakePaymentWithWallet />
+              </ProtectedRoute>
+            } />
             <Route path="/tenant/payments" element={
               <ProtectedRoute allowedRoles={['tenant']}>
                 <TenantPayments />
@@ -106,6 +113,11 @@ function App() {
             <Route path="/tenant/payment-methods" element={
               <ProtectedRoute allowedRoles={['tenant']}>
                 <TenantPaymentMethods />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/payment-methods-wallet" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <TenantPaymentMethodsWithWallet />
               </ProtectedRoute>
             } />
             <Route path="/tenant/auto-pay" element={
