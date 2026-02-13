@@ -8,7 +8,7 @@ import Register from './pages/Register';
 import TenantDashboard from './pages/tenant/Dashboard';
 import TenantPayments from './pages/tenant/Payments';
 import TenantPaymentMethods from './pages/tenant/PaymentMethods';
-import TenantAutoPayfrom './pages/tenant/AutoPay';
+import TenantAutoPay from './pages/tenant/AutoPay';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProperties from './pages/admin/Properties';
 import AdminTenants from './pages/admin/Tenants';
