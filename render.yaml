@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: rent-payment-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        value: aws-1-ap-southeast-1.pooler.supabase.com
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        value: postgres.woaygvrkwnfphzvxuiwm
+      - key: DB_PASSWORD
+        sync: false  # Will set this manually in Render dashboard
+      - key: DATABASE_URL
+        sync: false  # Will set this manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Will set this manually in Render dashboard
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CYBERSOURCE_MERCHANT_ID
+        value: 9059034_1770903917
+      - key: CYBERSOURCE_API_KEY
+        sync: false  # Will set this manually
+      - key: CYBERSOURCE_SECRET_KEY
+        sync: false  # Will set this manually
+      - key: CYBERSOURCE_API_URL
+        value: https://apitest.cybersource.com
+      - key: CYBERSOURCE_ENVIRONMENT
+        value: sandbox
+      - key: ENABLE_RECURRING_PAYMENTS
+        value: true
+      - key: CLIENT_URL
+        value: https://your-app.vercel.app
+      - key: SESSION_SECRET
+        sync: false  # Will set this manually
