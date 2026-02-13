@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tenantService } from '../../services/api';
 import Layout from '../../components/layout/Layout';
+import { generatePaymentReceipt } from '../../utils/pdfGenerator';
 import '../../assets/css/Payments.css';
 
 function TenantPayments() {
@@ -27,8 +28,8 @@ function TenantPayments() {
     try {
       setLoading(true);
       const response = await tenantService.getPaymentHistory(filters);
-      setPayments(response.data.payments);
-      setPagination(response.data.pagination);
+      setPayments(response.data.data?.payments || []);
+      setPagination(response.data.data?.pagination || { total: 0, totalPages: 1, currentPage: 1 });
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load payment history');
@@ -98,6 +99,15 @@ function TenantPayments() {
       years.push(currentYear - i);
     }
     return years;
+  };
+
+  const handleDownloadReceipt = (payment) => {
+    try {
+      generatePaymentReceipt(payment);
+    } catch (error) {
+      console.error('Error generating receipt:', error);
+      alert('Failed to generate receipt. Please try again.');
+    }
   };
 
   return (
@@ -218,6 +228,7 @@ function TenantPayments() {
                             <th>Status</th>
                             <th>Payment Method</th>
                             <th>Transaction ID</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -255,6 +266,15 @@ function TenantPayments() {
                               </td>
                               <td className="transaction-id">
                                 {payment.transaction_id || 'N/A'}
+                              </td>
+                              <td className="actions-cell">
+                                <button
+                                  onClick={() => handleDownloadReceipt(payment)}
+                                  className="btn btn-sm btn-primary"
+                                  title="Download Receipt"
+                                >
+                                  📄 Receipt
+                                </button>
                               </td>
                             </tr>
                           ))}

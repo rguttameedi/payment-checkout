@@ -139,6 +139,19 @@ class PaymentService {
       description
     } = paymentRequest;
 
+    // Mock mode for local testing (when Cybersource credentials are not configured)
+    if (process.env.MOCK_PAYMENTS === 'true' || !this.merchantId || !this.apiKey) {
+      console.log('⚠️  Using MOCK payment processing (no real transaction)');
+      return {
+        success: true,
+        transaction_id: `MOCK_${Date.now()}`,
+        status: 'completed',
+        amount: amount,
+        authorization_code: 'MOCK_AUTH_' + Math.random().toString(36).substring(7).toUpperCase(),
+        response_code: '100'
+      };
+    }
+
     const payload = {
       clientReferenceInformation: {
         code: order_id || `payment_${Date.now()}`

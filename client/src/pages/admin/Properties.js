@@ -28,8 +28,8 @@ function AdminProperties() {
         page: pagination.currentPage,
         limit: pagination.limit
       });
-      setProperties(response.data.properties);
-      setPagination(response.data.pagination);
+      setProperties(response.data.data?.properties || []);
+      setPagination(response.data.data?.pagination || { total: 0, totalPages: 1, currentPage: 1, limit: 10 });
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load properties');

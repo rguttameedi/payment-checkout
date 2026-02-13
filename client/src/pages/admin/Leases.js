@@ -27,8 +27,8 @@ function AdminLeases() {
     try {
       setLoading(true);
       const response = await adminService.getLeases(filters);
-      setLeases(response.data.leases);
-      setPagination(response.data.pagination);
+      setLeases(response.data.data?.leases || []);
+      setPagination(response.data.data?.pagination || { total: 0, totalPages: 1, currentPage: 1 });
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load leases');

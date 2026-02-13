@@ -88,14 +88,21 @@ exports.initiatePayment = async (req, res, next) => {
       description: `Rent payment for ${payment_month}/${payment_year}`
     });
 
+    // Calculate rent due date
+    const rent_due_date = new Date(payment_year, payment_month - 1, lease.rent_due_day);
+
     if (!paymentResult.success) {
       // Create failed payment record
       await RentPayment.create({
         lease_id,
+        tenant_id: tenantId,
         payment_method_id,
+        amount: amount,
         total_amount: amount,
+        payment_type: paymentMethod.payment_type,
         payment_month,
         payment_year,
+        rent_due_date,
         payment_status: 'failed',
         payment_date: new Date(),
         failure_reason: paymentResult.error?.message || 'Payment processing failed'
@@ -111,15 +118,18 @@ exports.initiatePayment = async (req, res, next) => {
     // Create successful payment record
     const payment = await RentPayment.create({
       lease_id,
+      tenant_id: tenantId,
       payment_method_id,
+      amount: amount,
       total_amount: amount,
+      payment_type: paymentMethod.payment_type,
       payment_month,
       payment_year,
+      rent_due_date,
       payment_status: paymentResult.status,
       payment_date: new Date(),
-      transaction_id: paymentResult.transaction_id,
-      authorization_code: paymentResult.authorization_code,
-      processor_response: paymentResult.response_code
+      cybersource_transaction_id: paymentResult.transaction_id,
+      cybersource_reference_code: paymentResult.authorization_code
     });
 
     res.status(201).json({
@@ -190,16 +200,25 @@ exports.processRecurringPayment = async (scheduleId) => {
       description: `Auto-pay rent for ${payment_month}/${payment_year}`
     });
 
+    // Calculate rent due date
+    const rent_due_date = new Date(payment_year, payment_month - 1, schedule.lease.rent_due_day);
+
     if (!paymentResult.success) {
       // Record failed attempt
       await RentPayment.create({
         lease_id: schedule.lease_id,
+        tenant_id: schedule.lease.tenant_id,
         payment_method_id: schedule.payment_method_id,
+        amount: schedule.lease.monthly_rent,
         total_amount: schedule.lease.monthly_rent,
+        payment_type: schedule.payment_method.payment_type,
         payment_month,
         payment_year,
+        rent_due_date,
         payment_status: 'failed',
         payment_date: new Date(),
+        is_recurring: true,
+        recurring_schedule_id: schedule.id,
         failure_reason: paymentResult.error?.message || 'Auto-pay failed'
       });
 
@@ -213,15 +232,20 @@ exports.processRecurringPayment = async (scheduleId) => {
     // Create successful payment record
     await RentPayment.create({
       lease_id: schedule.lease_id,
+      tenant_id: schedule.lease.tenant_id,
       payment_method_id: schedule.payment_method_id,
+      amount: schedule.lease.monthly_rent,
       total_amount: schedule.lease.monthly_rent,
+      payment_type: schedule.payment_method.payment_type,
       payment_month,
       payment_year,
+      rent_due_date,
       payment_status: paymentResult.status,
       payment_date: new Date(),
-      transaction_id: paymentResult.transaction_id,
-      authorization_code: paymentResult.authorization_code,
-      processor_response: paymentResult.response_code
+      is_recurring: true,
+      recurring_schedule_id: schedule.id,
+      cybersource_transaction_id: paymentResult.transaction_id,
+      cybersource_reference_code: paymentResult.authorization_code
     });
 
     // Update last payment date

@@ -47,8 +47,8 @@ exports.getDashboard = async (req, res, next) => {
       nextPaymentDueDate = new Date(currentYear, currentMonth, activeLease.rent_due_day);
     }
 
-    // Check if payment already made for current month
-    const currentMonthPayment = await RentPayment.findOne({
+    // Calculate total paid for current month (including partial payments)
+    const currentMonthPayments = await RentPayment.findAll({
       where: {
         lease_id: activeLease.id,
         payment_month: currentMonth,
@@ -56,6 +56,15 @@ exports.getDashboard = async (req, res, next) => {
         payment_status: { [Op.in]: ['completed', 'authorized', 'captured'] }
       }
     });
+
+    // Sum all payments for the current month
+    const totalPaidThisMonth = currentMonthPayments.reduce((sum, payment) => {
+      return sum + parseFloat(payment.total_amount || 0);
+    }, 0);
+
+    // Calculate remaining balance
+    const remainingBalance = Math.max(0, parseFloat(activeLease.monthly_rent) - totalPaidThisMonth);
+    const isFullyPaid = remainingBalance === 0;
 
     // Get recent payments (last 3)
     const recentPayments = await RentPayment.findAll({
@@ -88,8 +97,10 @@ exports.getDashboard = async (req, res, next) => {
         },
         nextPayment: {
           dueDate: nextPaymentDueDate,
-          amount: activeLease.monthly_rent,
-          isPaid: !!currentMonthPayment,
+          amount: remainingBalance,
+          totalDue: activeLease.monthly_rent,
+          amountPaid: totalPaidThisMonth,
+          isPaid: isFullyPaid,
           daysUntilDue: Math.ceil((nextPaymentDueDate - today) / (1000 * 60 * 60 * 24))
         },
         recentPayments,

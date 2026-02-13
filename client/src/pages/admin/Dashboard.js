@@ -17,10 +17,10 @@ function AdminDashboard() {
     try {
       setLoading(true);
       const response = await adminService.getDashboard();
-      setDashboardData(response.data);
+      setDashboardData(response.data.data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to load dashboard');
     } finally {
       setLoading(false);
     }

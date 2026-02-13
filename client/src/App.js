@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Pages
@@ -7,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import TenantDashboard from './pages/tenant/Dashboard';
 import TenantPayments from './pages/tenant/Payments';
+import TenantMakePayment from './pages/tenant/MakePayment';
 import TenantPaymentMethods from './pages/tenant/PaymentMethods';
 import TenantAutoPay from './pages/tenant/AutoPay';
 import AdminDashboard from './pages/admin/Dashboard';
@@ -59,6 +62,18 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="App">
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={
@@ -76,6 +91,11 @@ function App() {
             <Route path="/tenant/dashboard" element={
               <ProtectedRoute allowedRoles={['tenant']}>
                 <TenantDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/make-payment" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <TenantMakePayment />
               </ProtectedRoute>
             } />
             <Route path="/tenant/payments" element={

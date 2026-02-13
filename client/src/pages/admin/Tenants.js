@@ -29,8 +29,8 @@ function AdminTenants() {
         page: pagination.currentPage,
         limit: pagination.limit
       });
-      setTenants(response.data.tenants);
-      setPagination(response.data.pagination);
+      setTenants(response.data.data?.tenants || []);
+      setPagination(response.data.data?.pagination || { total: 0, totalPages: 1, currentPage: 1, limit: 20 });
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load tenants');

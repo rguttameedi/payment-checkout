@@ -17,10 +17,10 @@ function TenantDashboard() {
     try {
       setLoading(true);
       const response = await tenantService.getDashboard();
-      setDashboardData(response.data);
+      setDashboardData(response.data.data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to load dashboard');
     } finally {
       setLoading(false);
     }
@@ -235,7 +235,7 @@ function TenantDashboard() {
           </div>
           <div className="section-content">
             <div className="action-buttons">
-              <Link to="/tenant/payments" className="btn btn-primary">
+              <Link to="/tenant/make-payment" className="btn btn-primary">
                 <span className="btn-icon">💳</span>
                 Make a Payment
               </Link>

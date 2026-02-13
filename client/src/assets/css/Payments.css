@@ -110,6 +110,23 @@
   color: #999;
 }
 
+/* Actions Cell */
+.actions-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.actions-cell .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.actions-cell .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(66, 153, 225, 0.3);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .filters-grid {

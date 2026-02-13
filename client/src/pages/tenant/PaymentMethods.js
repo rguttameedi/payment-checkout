@@ -45,7 +45,7 @@ function TenantPaymentMethods() {
     try {
       setLoading(true);
       const response = await tenantService.getPaymentMethods();
-      setPaymentMethods(response.data);
+      setPaymentMethods(response.data.data || []);
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load payment methods');

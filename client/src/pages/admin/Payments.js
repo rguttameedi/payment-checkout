@@ -27,12 +27,12 @@ function AdminPayments() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllPayments(filters);
-      setPayments(response.data.payments || []);
-      setPagination(response.data.pagination || { total: 0, totalPages: 1, currentPage: 1 });
+      const response = await adminService.getPayments(filters);
+      setPayments(response.data.data?.payments || []);
+      setPagination(response.data.data?.pagination || { total: 0, totalPages: 1, currentPage: 1 });
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load payments');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to load payments');
     } finally {
       setLoading(false);
     }
