@@ -1,0 +1,28 @@
+'use strict';
+
+var index = require('./index-Bm9SO5Cr.js');
+var appGlobals = require('./app-globals-V2Kpy_OQ.js');
+
+var _documentCurrentScript = typeof document !== 'undefined' ? document.currentScript : null;
+/*
+ Stencil Client Patch Browser v4.30.0 | MIT Licensed | https://stenciljs.com
+ */
+
+var patchBrowser = () => {
+  const importMeta = (typeof document === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : (_documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === 'SCRIPT' && _documentCurrentScript.src || new URL('wallet-ui.cjs.js', document.baseURI).href));
+  const opts = {};
+  if (importMeta !== "") {
+    opts.resourcesUrl = new URL(".", importMeta).href;
+  }
+  return index.promiseResolve(opts);
+};
+
+patchBrowser().then(async (options) => {
+  await appGlobals.globalScripts();
+  return index.bootstrapLazy([["payment-date.cjs",[[0,"payment-date"]]],["date-picker_2.cjs",[[0,"date-picker",{"value":[1],"placeholder":[1],"inputId":[1,"input-id"],"minAge":[2,"min-age"],"inputValue":[32],"isDatePickerOpen":[32],"selectedDate":[32],"isYearPickerOpen":[32],"isSelectingMonth":[32],"isSelectingYear":[32],"yearRangeStart":[32]},null,{"value":["valueChanged"]}],[1,"mfa-model-popup",{"operationsToken":[1,"operations-token"],"userScopedAccessToken":[1,"user-scoped-access-token"],"environment":[1],"onClose":[16,"on-close"],"addRequestPayload":[8,"add-request-payload"],"initialMfaResponse":[8,"initial-mfa-response"],"requestType":[1,"request-type"],"errorHandler":[16,"error-handler"],"mfaResponse":[32],"time":[32],"isRunning":[32],"currentInquiryId":[32],"accountSubmissionSuccess":[32],"noOfAttempts":[32]},null,{"isRunning":["handleIsRunningTrue","handleIsRunningFalse"],"mfaResponse":["handleMfaResponseChanged"],"accountSubmissionSuccess":["handleAccountSubmissionSuccessChanged"]}]]],["add-bank-account_2.cjs",[[0,"add-bank-account",{"operationsToken":[1,"operations-token"],"userScopedAccessToken":[1,"user-scoped-access-token"],"environment":[1],"accountHolderName":[32],"accountNumber":[32],"routingNumber":[32],"bankAccountType":[32],"dateofBirth":[32],"paymentAccountNickname":[32],"firstName":[32],"lastName":[32],"address1":[32],"address2":[32],"city":[32],"state":[32],"country":[32],"zipCode":[32],"mobilePhoneNumber":[32],"selectedPhoneCode":[32],"isPhoneCodeDropdownOpen":[32],"emailAddress":[32],"apiErrors":[32],"isLoading":[32],"mfaPopUp":[32],"PaymentAccountRequestPayload":[32],"mfaResponsePayload":[32],"brokenRules":[32],"isAddressSuggestion":[32],"isVerifying":[32],"errors":[32],"isAddressResubmission":[32]}],[0,"add-new-payment",{"operationsToken":[1,"operations-token"],"userScopedAccessToken":[1,"user-scoped-access-token"],"environment":[1],"availableCreditCards":[16,"available-credit-cards"],"showAddNewPayment":[32],"showPaymentSelector":[32],"nameOnCard":[32],"cardNumber":[32],"expiryDate":[32],"cvv":[32],"cardType":[32],"address2":[32],"dateofBirth":[32],"paymentAccountNickname":[32],"firstName":[32],"lastName":[32],"address1":[32],"city":[32],"state":[32],"country":[32],"zipCode":[32],"mobilePhoneNumber":[32],"selectedPhoneCode":[32],"isPhoneCodeDropdownOpen":[32],"emailAddress":[32],"apiErrors":[32],"isLoading":[32],"mfaPopUp":[32],"addCardRequestPayload":[32],"mfaResponsePayload":[32],"isAddressSuggestion":[32],"brokenRules":[32],"errors":[32],"isAddressResubmission":[32]}]]],["wallet-dropdown.cjs",[[1,"wallet-dropdown",{"options":[1],"operationsToken":[1,"operations-token"],"userScopedAccessToken":[1,"user-scoped-access-token"],"selectPayment":[1537,"select-payment"],"displayMode":[1,"display-mode"],"paymentType":[1,"payment-type"],"environment":[1],"parsedOptions":[32],"showAddNewPayment":[32],"showAddBankAccount":[32],"selectedOption":[32],"selectedPaymentMethod":[32],"selectedPaymentDate":[32],"selectedPaymentIconType":[32],"showPaymentSelector":[32],"showPaymentDate":[32],"walletResponse":[32]},[[0,"cardAdded","handleNewCard"],[0,"bankAccountAdded","handleNewBankAccount"],[16,"updateDate","updateDate"],[16,"goToPaymentSelector","goToPaymentSelector"]],{"selectPayment":["handleSelectPaymentChange"]}]]]], options);
+});
+
+exports.setNonce = index.setNonce;
+//# sourceMappingURL=wallet-ui.cjs.js.map
+
+//# sourceMappingURL=wallet-ui.cjs.js.map

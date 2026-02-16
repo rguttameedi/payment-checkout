@@ -14,6 +14,10 @@ import TenantMakePaymentWithWallet from './pages/tenant/MakePaymentWithWallet';
 import TenantPaymentMethods from './pages/tenant/PaymentMethods';
 import TenantPaymentMethodsWithWallet from './pages/tenant/PaymentMethodsWithWallet';
 import TenantAutoPay from './pages/tenant/AutoPay';
+import AutoPaySetup from './pages/tenant/AutoPaySetup';
+import SplitRent from './pages/tenant/SplitRent';
+import RoommateSplit from './pages/tenant/RoommateSplit';
+import FlexiblePaymentPlans from './pages/tenant/FlexiblePaymentPlans';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProperties from './pages/admin/Properties';
 import AdminTenants from './pages/admin/Tenants';
@@ -123,6 +127,26 @@ function App() {
             <Route path="/tenant/auto-pay" element={
               <ProtectedRoute allowedRoles={['tenant']}>
                 <TenantAutoPay />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/autopay-setup" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <AutoPaySetup />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/split-rent" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <SplitRent />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/roommate-split" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <RoommateSplit />
+              </ProtectedRoute>
+            } />
+            <Route path="/tenant/flexible-payment" element={
+              <ProtectedRoute allowedRoles={['tenant']}>
+                <FlexiblePaymentPlans />
               </ProtectedRoute>
             } />
 

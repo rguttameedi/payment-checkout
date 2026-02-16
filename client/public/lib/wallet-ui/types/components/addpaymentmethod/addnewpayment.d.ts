@@ -1,0 +1,134 @@
+import { EventEmitter } from '../../stencil-public-runtime';
+import { CreditCardType } from '../../utils/apiService';
+import { Environment } from '../../config';
+export declare class AddNewPayment {
+    goToPaymentSelector: EventEmitter<boolean>;
+    addressValidation: EventEmitter<string>;
+    private errorBannerRef;
+    private devLog;
+    formattedMobileNumber: string;
+    showAddNewPayment: boolean;
+    showPaymentSelector: boolean;
+    operationsToken: string;
+    userScopedAccessToken: string;
+    environment: Environment;
+    availableCreditCards?: CreditCardType[] | null;
+    cardAdded: EventEmitter<string>;
+    nameOnCard: string;
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+    cardType: string;
+    address2: string;
+    dateofBirth: string;
+    paymentAccountNickname: string;
+    firstName: string;
+    lastName: string;
+    address1: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+    mobilePhoneNumber: string;
+    selectedPhoneCode: string;
+    isPhoneCodeDropdownOpen: boolean;
+    emailAddress: string;
+    apiErrors: {
+        [key: string]: string[];
+    };
+    isLoading: boolean;
+    mfaPopUp: boolean;
+    addCardRequestPayload: any;
+    mfaResponsePayload: any;
+    isAddressSuggestion: boolean;
+    brokenRules: string[];
+    errors: {
+        nameOnCard: string;
+        cardNumber: string;
+        expiryDate: string;
+        cvv: string;
+        firstName: string;
+        lastName: string;
+        address1: string;
+        address2: string;
+        dateofBirth: string;
+        paymentAccountNickname: string;
+        city: string;
+        state: string;
+        country: string;
+        zipCode: string;
+        mobilePhoneNumber: string;
+        emailAddress: string;
+        selectedPhoneCode: string;
+    };
+    isAddressResubmission: boolean;
+    el: HTMLElement;
+    private dropdownWrapper;
+    componentWillLoad(): void;
+    detectCardType(number: string): string;
+    formatCardNumber(value: string): string;
+    private mapCardTypeToAvailableCC;
+    private validateCardTypeSupported;
+    private getExpectedCardLength;
+    private isValidCardLength;
+    handleCardNumberChange(value: string): void;
+    handleInputChange(field: string, value: string): void;
+    handleMobileNumberChange(event: Event): void;
+    handleExpiryDateKeyDown(event: KeyboardEvent): void;
+    handleBirthDateChange(value: string): void;
+    handleExpiryDateChange(event: Event): void;
+    private showErrorBanner;
+    private scrollToView;
+    handleStateChange(event: Event): void;
+    isCountryUS(): boolean;
+    isCountryUSorCanada(): boolean;
+    getDefaultState(): string;
+    handleCountryChange(event: Event): void;
+    handlePhoneCodeChange(event: Event): void;
+    isValidCardNumber(number: string): boolean;
+    validateMobilePhoneNumber(): {
+        [key: string]: string;
+    };
+    validateEmailAddress(): {
+        [key: string]: string;
+    };
+    validateSelectedPhoneCode(): {
+        [key: string]: string;
+    };
+    togglePhoneCodeDropdown: (event: MouseEvent) => void;
+    selectPhoneCode: (code: string) => void;
+    handleOutsideClick: (event: MouseEvent) => void;
+    handleEscapePress: (event: KeyboardEvent) => void;
+    private removeDropdownListeners;
+    private validateCardFields;
+    private validateExpiryDate;
+    private validatePersonalFields;
+    private validateAddressFields;
+    private validateDateOfBirth;
+    private handleMfaError;
+    handleClosePopup: () => void;
+    validate(): boolean;
+    private scrollToFirstError;
+    handleSubmit(event: Event): Promise<void>;
+    private handleResponseSuccess;
+    private handleResponseError;
+    private handleAddressValidation;
+    private handleValidationError;
+    private handleUnknownError;
+    private applySuggested;
+    private handleSuccess;
+    goToWallet: () => void;
+    /**
+     * Formats a date from MM/DD/YYYY to YYYY-MM-DD format for API
+     * @param dateString - Date string in MM/DD/YYYY format
+     * @returns Date string in YYYY-MM-DD format
+     */
+    private formatDateForAPI;
+    resetForm(): void;
+    private readonly handleCloseBanner;
+    private renderErrorBanner;
+    private renderApiErrors;
+    private renderCardFields;
+    private renderMobilePhoneNumber;
+    render(): any;
+}

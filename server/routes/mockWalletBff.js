@@ -16,7 +16,7 @@ const { authenticate } = require('../middleware/auth');
  * but it does require an operations token in the Authorization header
  */
 router.post(
-  '/UserScoped/acquire_user_scoped_token',
+  '/acquire_user_scoped_token',
   mockWalletBffController.acquireUserScopedToken
 );
 

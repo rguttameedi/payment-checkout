@@ -5,6 +5,8 @@
  * In production, these would come from Unified Login IDP and the real BFF.
  */
 
+import { getIntegrationConfig } from '../config/integrationConfig';
+
 /**
  * Generate a mock JWT token
  * @param {string} scope - Token scope
@@ -47,22 +49,24 @@ function generateMockUserScopedToken() {
  */
 export const mockWalletAuth = {
   /**
-   * Get mock operations token
-   * Simulates getting JWT from Unified Login IDP with operations scope
+   * Get operations token
+   * Uses the real user's JWT token from localStorage
    */
   async getOperationsToken() {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Get the real JWT token from localStorage (set during login)
+    const token = localStorage.getItem('token');
 
-    const token = generateMockJWT('urn:upp-wallet-operations', 7200);
+    if (token) {
+      console.log('🔐 Using real user JWT token as operations token:', {
+        token: token.substring(0, 50) + '...'
+      });
+      return token;
+    }
 
-    console.log('🔐 Mock Operations Token generated:', {
-      scope: 'urn:upp-wallet-operations',
-      expiresIn: '2 hours',
-      token: token.substring(0, 50) + '...'
-    });
-
-    return token;
+    // Fallback to mock if no real token
+    console.warn('⚠️ No real token found, using mock');
+    const mockToken = generateMockJWT('urn:upp-wallet-operations', 7200);
+    return mockToken;
   },
 
   /**
@@ -86,45 +90,60 @@ export const mockWalletAuth = {
 
   /**
    * Acquire user scoped access token
-   * Simulates calling BFF's /api/UserScoped/acquire_user_scoped_token
+   * Calls real BFF's /api/UserScoped/acquire_user_scoped_token endpoint
    *
    * @param {string} operationsToken - Operations JWT token
    * @param {string} walletToken - Wallet JWT token
    * @returns {Promise<Object>} User scoped token response
    */
   async acquireUserScopedToken(operationsToken, walletToken) {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     const userId = localStorage.getItem('userId') || '1';
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // Simulate BFF request
-    console.log('📡 Simulating BFF call: POST /api/UserScoped/acquire_user_scoped_token', {
-      headers: {
-        Authorization: `Bearer ${operationsToken.substring(0, 30)}...`
-      },
-      body: {
-        realpage_id: userId,
-        upp_wallet_token: walletToken.substring(0, 30) + '...'
+    try {
+      console.log('📡 Calling REAL BFF: POST /api/UserScoped/acquire_user_scoped_token');
+
+      // Get integration configuration
+      const integrationConfig = getIntegrationConfig();
+
+      const response = await fetch('/api/UserScoped/acquire_user_scoped_token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${operationsToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          realpage_id: userId,
+          upp_wallet_token: walletToken,
+          // Pass integration model configuration
+          ...integrationConfig
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`BFF returned ${response.status}`);
       }
-    });
 
-    const userScopedToken = generateMockUserScopedToken();
-    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+      const data = await response.json();
 
-    const response = {
-      user_scoped_access_token: userScopedToken,
-      expiresAt: expiresAt,
-      expires_in: 3600
-    };
+      console.log('✅ Real User Scoped Token acquired from BFF:', {
+        expiresAt: data.expiresAt,
+        token: data.user_scoped_access_token?.substring(0, 50) + '...'
+      });
 
-    console.log('✅ Mock User Scoped Token acquired:', {
-      expiresAt,
-      token: userScopedToken.substring(0, 50) + '...'
-    });
+      return data;
+    } catch (error) {
+      console.warn('⚠️ Real BFF call failed, falling back to mock:', error.message);
 
-    return response;
+      // Fallback to mock if real API fails
+      const userScopedToken = generateMockUserScopedToken();
+      const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+
+      return {
+        user_scoped_access_token: userScopedToken,
+        expiresAt: expiresAt,
+        expires_in: 3600
+      };
+    }
   },
 
   /**

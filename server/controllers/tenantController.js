@@ -41,20 +41,27 @@ exports.getDashboard = async (req, res, next) => {
     const currentMonth = today.getMonth() + 1;
     const currentYear = today.getFullYear();
 
+    // First check if current month is paid
+    const currentMonthPayments = await RentPayment.findAll({
+      where: {
+        lease_id: activeLease.id,
+        payment_month: currentMonth,
+        payment_year: currentYear,
+        payment_status: { [Op.in]: ['completed', 'authorized', 'captured'] }
+      }
+    });
+
+    const currentMonthPaid = currentMonthPayments.reduce((sum, payment) => {
+      return sum + parseFloat(payment.total_amount || 0);
+    }, 0);
+
+    const currentMonthFullyPaid = currentMonthPaid >= parseFloat(activeLease.monthly_rent);
+
     // Determine which month/year we should check for payment
+    // Always show current calendar month (so user sees their progress)
     let paymentCheckMonth = currentMonth;
     let paymentCheckYear = currentYear;
-
     let nextPaymentDueDate = new Date(currentYear, currentMonth - 1, activeLease.rent_due_day);
-    if (nextPaymentDueDate < today) {
-      // If this month's due date passed, next payment is next month
-      nextPaymentDueDate = new Date(currentYear, currentMonth, activeLease.rent_due_day);
-      paymentCheckMonth = currentMonth + 1;
-      if (paymentCheckMonth > 12) {
-        paymentCheckMonth = 1;
-        paymentCheckYear = currentYear + 1;
-      }
-    }
 
     // Calculate total paid for the payment period (including partial payments)
     const periodPayments = await RentPayment.findAll({

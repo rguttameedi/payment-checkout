@@ -1,0 +1,284 @@
+.payment-method-selector {
+  margin: 20px 0;
+}
+
+.payment-method-selector label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.selector-container {
+  position: relative;
+}
+
+.selected-method {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.selected-method:hover {
+  border-color: #667eea;
+}
+
+.selected-method.open {
+  border-color: #667eea;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.method-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.method-display.placeholder {
+  color: #999;
+}
+
+.method-icon {
+  font-size: 24px;
+}
+
+.method-text {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.default-badge {
+  background: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.dropdown-arrow {
+  color: #666;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #667eea;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-height: 180px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  z-index: 1000;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #f1f1f1;
+}
+
+/* Custom scrollbar styling */
+.dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-bottom-right-radius: 8px;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 4px;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: #5568d3;
+}
+
+.dropdown-section {
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-section:last-child {
+  border-bottom: none;
+}
+
+.section-header {
+  padding: 12px 16px;
+  background: #f5f5f5;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f8f9ff;
+}
+
+.dropdown-item.selected {
+  background: #e8ebff;
+}
+
+.dropdown-item.add-new {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.dropdown-item.add-new:hover {
+  background: #f0f3ff;
+}
+
+.method-info {
+  flex: 1;
+}
+
+.method-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.method-nickname {
+  font-size: 13px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.method-expiry {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.payment-selector-loading {
+  text-align: center;
+  padding: 20px;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-methods-message {
+  margin-top: 10px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+}
+
+.no-methods-message button {
+  background: none;
+  border: none;
+  color: #667eea;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.no-methods-message button:hover {
+  color: #5568d3;
+}
+
+/* Add Payment Buttons - Outside dropdown */
+.add-payment-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-add-payment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: white;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-add-payment:hover {
+  background: #f0f3ff;
+  border-color: #5568d3;
+  color: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.btn-add-payment:active {
+  transform: translateY(0);
+}
+
+.btn-add-payment .btn-icon {
+  font-size: 18px;
+}
+
+/* Single add payment button - full width */
+.btn-add-payment-single {
+  width: 100%;
+  flex: none;
+}
+
+.no-methods-in-dropdown {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Close dropdown when clicking outside */
+@media (max-width: 768px) {
+  .dropdown-list {
+    max-height: 150px;
+  }
+
+  .add-payment-buttons {
+    flex-direction: column;
+  }
+}

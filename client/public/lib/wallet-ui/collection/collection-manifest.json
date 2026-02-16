@@ -1,0 +1,17 @@
+{
+  "entries": [
+    "components/addpaymentmethod/addnewpayment.js",
+    "components/addbankaccount/addbankaccount.js",
+    "components/walletdropdown/walletdropdown.js",
+    "components/datePicker/date-picker.js",
+    "components/mfaModelPopUp/mfaModelPopUp.js",
+    "components/paymentDate/payment-date.js"
+  ],
+  "compiler": {
+    "name": "@stencil/core",
+    "version": "4.30.0",
+    "typescriptVersion": "5.5.4"
+  },
+  "collections": [],
+  "bundles": []
+}

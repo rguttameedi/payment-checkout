@@ -57,7 +57,8 @@ async function setupDatabase() {
       '004-create-leases.sql',
       '005-create-payment-methods.sql',
       '006-create-rent-payments.sql',
-      '007-create-recurring-schedules.sql'
+      '007-create-recurring-schedules.sql',
+      '008-create-user-identity-verification.sql'
     ];
 
     console.log('\n--- Running Migrations ---\n');
@@ -129,7 +130,8 @@ async function setupDatabase() {
       'leases',
       'payment_methods',
       'rent_payments',
-      'recurring_payment_schedules'
+      'recurring_payment_schedules',
+      'user_identity_verifications'
     ];
 
     console.log('\nTables created:');

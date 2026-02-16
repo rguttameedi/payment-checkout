@@ -1,4 +1,7 @@
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+const envPath = path.resolve(__dirname, '..', '.env');
+console.log('🔍 Loading .env from:', envPath);
+require('dotenv').config({ path: envPath });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -17,12 +20,20 @@ const adminRoutes = require('./routes/admin');
 const paymentRoutes = require('./routes/payment');
 const mockWalletBffRoutes = require('./routes/mockWalletBff');
 const sharedWalletRoutes = require('./routes/sharedWallet');
+const walletBFFRoutes = require('./routes/walletBFF');
+const autopayRoutes = require('./routes/autopay');
+const splitPaymentRoutes = require('./routes/splitPayment');
+const roommateSplitRoutes = require('./routes/roommateSplit');
+const flexiblePaymentRoutes = require('./routes/flexiblePayment');
+const identityVerificationRoutes = require('./routes/identityVerification');
 
 // Import recurring payment processor
 const recurringPaymentProcessor = require('./jobs/recurringPaymentProcessor');
 
 // Create Express app
 const app = express();
+console.log('🔍 DEBUG: process.env.PORT =', process.env.PORT);
+console.log('🔍 DEBUG: NODE_ENV =', process.env.NODE_ENV);
 const PORT = process.env.PORT || 3000;
 
 // Increase header size limit for wallet UI tokens
@@ -58,7 +69,7 @@ app.use('/api/', limiter);
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per windowMs
+  max: 100, // 100 requests per windowMs (increased for testing)
   skipSuccessfulRequests: true, // Don't count successful logins
   message: 'Too many login attempts, please try again later'
 });
@@ -109,6 +120,24 @@ app.use('/api/admin', adminRoutes);
 
 // Payment processing routes
 app.use('/api/payment', paymentRoutes);
+
+// AutoPay routes
+app.use('/api/autopay', autopayRoutes);
+
+// Split Payment routes
+app.use('/api/split-payment', splitPaymentRoutes);
+
+// Roommate Split routes
+app.use('/api/roommate-split', roommateSplitRoutes);
+
+// Flexible Payment routes
+app.use('/api/flexible-payment', flexiblePaymentRoutes);
+
+// Identity Verification routes (for high-value transactions)
+app.use('/api/identity-verification', identityVerificationRoutes);
+
+// Wallet BFF routes (Backend For Frontend - for Shared Wallet UI)
+app.use('/api', walletBFFRoutes);
 
 // Mock Wallet BFF routes (for Shared Wallet UI integration)
 app.use('/api/wallet-bff', mockWalletBffRoutes);

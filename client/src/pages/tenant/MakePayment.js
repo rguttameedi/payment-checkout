@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tenantService } from '../../services/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Layout from '../../components/layout/Layout';
+import PaymentMethodSelector from '../../components/payment/PaymentMethodSelector';
 import SharedWalletDropdown from '../../components/wallet/SharedWalletDropdown';
+import IdentityVerificationForm from '../../components/wallet/IdentityVerificationForm';
 import '../../assets/css/MakePayment.css';
 
 function MakePayment() {
@@ -19,6 +21,16 @@ function MakePayment() {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [useWalletUI, setUseWalletUI] = useState(true); // Toggle for wallet UI
 
+  // State for showing Shared Wallet UI for adding new payment methods
+  const [showAddWallet, setShowAddWallet] = useState(false);
+  const [addPaymentType, setAddPaymentType] = useState('all');
+  const paymentSelectorRef = useRef(null);
+
+  // State for identity verification
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
+  const [checkingVerification, setCheckingVerification] = useState(false);
+
   const [formData, setFormData] = useState({
     lease_id: '',
     payment_method_id: '',
@@ -30,6 +42,75 @@ function MakePayment() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Check identity verification requirements when amount changes
+  useEffect(() => {
+    const checkVerification = async () => {
+      const amount = parseFloat(formData.amount);
+
+      console.log('🔍 Checking verification for amount:', amount);
+
+      // Only check if amount is valid and greater than 0
+      if (!amount || amount <= 0 || isNaN(amount)) {
+        console.log('⏭️ Skipping verification check - invalid amount');
+        setVerificationRequired(false);
+        return;
+      }
+
+      try {
+        setCheckingVerification(true);
+        const token = localStorage.getItem('token');
+
+        console.log('📡 Making API call to /api/identity-verification/check with amount:', amount);
+        console.log('🔑 Token exists:', !!token);
+
+        const response = await axios.post(
+          '/api/identity-verification/check',
+          { amount },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        console.log('📥 API Response:', response.data);
+
+        if (response.data.hasExisting) {
+          // User already verified
+          console.log('✅ User already has identity verification on file');
+          setVerificationRequired(false);
+          setVerificationComplete(true);
+        } else if (response.data.required) {
+          // Needs verification
+          console.log('🔒 Identity verification required for $' + amount);
+          console.log('🎯 Setting verificationRequired to TRUE');
+          setVerificationRequired(true);
+          setVerificationComplete(false);
+        } else {
+          // Below threshold
+          console.log('💰 Amount below threshold, no verification needed');
+          setVerificationRequired(false);
+          setVerificationComplete(false);
+        }
+
+      } catch (error) {
+        console.error('❌ Error checking verification:', error);
+        console.error('❌ Error details:', error.response?.data);
+        // On error, don't block the payment
+        setVerificationRequired(false);
+      } finally {
+        setCheckingVerification(false);
+      }
+    };
+
+    // Debounce the check (wait 500ms after user stops typing)
+    const timeoutId = setTimeout(() => {
+      checkVerification();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.amount]);
 
   const fetchData = async () => {
     try {
@@ -138,6 +219,14 @@ function MakePayment() {
     console.log('✅ New payment method added:', paymentDetail);
     toast.success(`${paymentDetail.type === 'card' ? 'Card' : 'Bank account'} added successfully!`);
 
+    // Close the add wallet UI
+    setShowAddWallet(false);
+
+    // Refresh the payment method selector
+    if (paymentSelectorRef.current && paymentSelectorRef.current.refresh) {
+      paymentSelectorRef.current.refresh();
+    }
+
     // Refresh payment methods list
     fetchData();
   };
@@ -175,7 +264,7 @@ function MakePayment() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/payment/process',
+        '/api/payment/process',
         formData,
         {
           headers: {
@@ -186,11 +275,29 @@ function MakePayment() {
       );
 
       if (response.data.success) {
+        // Build detailed success message
+        const paymentData = response.data.data || {};
+        const successMessage = (
+          <div>
+            <strong>✅ Payment Successful!</strong>
+            <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+              <div>💰 Amount: ${parseFloat(formData.amount).toFixed(2)}</div>
+              {paymentData.transaction_id && (
+                <div>🔑 Transaction ID: {paymentData.transaction_id}</div>
+              )}
+              <div>📅 Period: {formData.payment_month}/{formData.payment_year}</div>
+              <div style={{ marginTop: '4px', color: '#4CAF50' }}>
+                Redirecting to payment history...
+              </div>
+            </div>
+          </div>
+        );
+
         toast.update(toastId, {
-          render: `Payment of ${formatCurrency(formData.amount)} processed successfully!`,
+          render: successMessage,
           type: 'success',
           isLoading: false,
-          autoClose: 3000
+          autoClose: 4000
         });
 
         setTimeout(() => {
@@ -198,29 +305,173 @@ function MakePayment() {
         }, 2000);
       }
     } catch (err) {
-      // Extract error message
-      let errorMessage = 'Payment failed. Please try again.';
+      console.error('❌ Payment error:', err);
+      console.error('❌ Error response:', err.response?.data);
 
-      if (err.response?.data?.error) {
-        const errorData = err.response.data.error;
-        if (typeof errorData === 'object' && errorData.errorInformation) {
-          errorMessage = errorData.errorInformation.message || errorData.errorInformation.reason || 'Payment processing error';
-        } else if (typeof errorData === 'string') {
-          errorMessage = errorData;
+      // Extract error message with detailed information
+      let errorMessage = 'Payment failed. Please try again.';
+      let errorDetails = null;
+
+      // Network error (no response from server)
+      if (!err.response) {
+        errorMessage = (
+          <div>
+            <strong>❌ Network Error</strong>
+            <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+              Unable to connect to the payment server. Please check your internet connection and try again.
+            </div>
+          </div>
+        );
+      }
+      // Server responded with error
+      else if (err.response?.data) {
+        const responseData = err.response.data;
+        const statusCode = err.response.status;
+
+        // Overpayment error with detailed breakdown
+        if (responseData.details && responseData.details.totalPaid !== undefined) {
+          errorDetails = responseData.details;
+          errorMessage = (
+            <div>
+              <strong>⚠️ Payment Exceeds Monthly Rent</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em', lineHeight: '1.6' }}>
+                <div>💰 Already Paid: <strong>${errorDetails.totalPaid}</strong></div>
+                <div>🏠 Monthly Rent: <strong>${errorDetails.monthlyRent}</strong></div>
+                <div>💵 You Requested: <strong>${errorDetails.requestedAmount}</strong></div>
+                <div style={{ marginTop: '8px', padding: '8px', background: '#e8f5e9', borderRadius: '4px' }}>
+                  <strong style={{ color: '#2e7d32' }}>
+                    ✅ You can pay up to: ${errorDetails.availableAmount}
+                  </strong>
+                </div>
+                <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#666' }}>
+                  💡 Tip: Adjust the amount to ${errorDetails.availableAmount} or less
+                </div>
+              </div>
+            </div>
+          );
         }
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
+        // Duplicate payment error
+        else if (responseData.message && responseData.message.includes('already exists')) {
+          errorMessage = (
+            <div>
+              <strong>⚠️ Duplicate Payment</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                {responseData.message}
+                <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#666' }}>
+                  💡 Check your payment history to see if this payment was already processed.
+                </div>
+              </div>
+            </div>
+          );
+        }
+        // Lease not found
+        else if (statusCode === 404 && responseData.message?.includes('lease')) {
+          errorMessage = (
+            <div>
+              <strong>❌ Lease Not Found</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                Unable to find your active lease. Please contact property management.
+              </div>
+            </div>
+          );
+        }
+        // Payment method not found
+        else if (statusCode === 404 && responseData.message?.includes('payment method')) {
+          errorMessage = (
+            <div>
+              <strong>❌ Payment Method Not Found</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                Please select a valid payment method or add a new one.
+              </div>
+            </div>
+          );
+        }
+        // Authentication error
+        else if (statusCode === 401 || statusCode === 403) {
+          errorMessage = (
+            <div>
+              <strong>🔒 Authentication Required</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                Your session has expired. Please log in again.
+              </div>
+            </div>
+          );
+          // Redirect to login after showing error
+          setTimeout(() => {
+            navigate('/login');
+          }, 3000);
+        }
+        // Generic server error with message
+        else if (responseData.message) {
+          errorMessage = (
+            <div>
+              <strong>❌ Payment Failed</strong>
+              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                {responseData.message}
+              </div>
+            </div>
+          );
+        }
+        // Cybersource/payment processor error
+        else if (responseData.error) {
+          const errorData = responseData.error;
+          if (typeof errorData === 'object' && errorData.errorInformation) {
+            const processorMessage = errorData.errorInformation.message || errorData.errorInformation.reason;
+            errorMessage = (
+              <div>
+                <strong>❌ Payment Processor Error</strong>
+                <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                  {processorMessage || 'Payment processing failed'}
+                  <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#666' }}>
+                    💡 Please check your payment method details and try again.
+                  </div>
+                </div>
+              </div>
+            );
+          } else if (typeof errorData === 'string') {
+            errorMessage = (
+              <div>
+                <strong>❌ Payment Failed</strong>
+                <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                  {errorData}
+                </div>
+              </div>
+            );
+          }
+        }
       }
 
       toast.update(toastId, {
         render: errorMessage,
         type: 'error',
         isLoading: false,
-        autoClose: 5000
+        autoClose: 10000 // Longer duration for detailed errors
       });
 
       setProcessing(false);
     }
+  };
+
+  /**
+   * Handle identity verification completion
+   */
+  const handleVerificationComplete = (result) => {
+    console.log('✅ Identity verification complete:', result);
+    setVerificationComplete(true);
+    setVerificationRequired(false);
+    toast.success('Identity verified successfully! You may now proceed with your payment.');
+  };
+
+  /**
+   * Handle identity verification cancellation
+   */
+  const handleVerificationCancel = () => {
+    console.log('❌ Identity verification cancelled by user');
+    setVerificationRequired(false);
+    setVerificationComplete(false);
+    // Clear the amount to force user to re-enter
+    setFormData({ ...formData, amount: '' });
+    toast.info('Payment cancelled. Please adjust the amount or try again later.');
   };
 
   const formatCurrency = (amount) => {
@@ -357,20 +608,19 @@ function MakePayment() {
                 <small>Standard rent: {formatCurrency(leaseInfo?.monthlyRent)}</small>
               </div>
 
-              {/* Shared Wallet UI - Payment Method Selection */}
+              {/* Payment Method Selection */}
               <div className="form-group wallet-ui-section">
-                <label>Payment Method 🆕</label>
-                <p className="wallet-description">
-                  Select an existing payment method or add a new card/bank account
-                </p>
-
-                <SharedWalletDropdown
-                  environment="localdevelopment"
-                  displayMode="full"
-                  paymentType="all"
+                <PaymentMethodSelector
+                  ref={paymentSelectorRef}
                   onPaymentSelected={handlePaymentSelected}
-                  onPaymentAdded={handlePaymentAdded}
-                  onError={handleWalletError}
+                  onAddNew={(type) => {
+                    // Show Shared Wallet UI with both payment options
+                    // Always show 'all' to display both card and bank options
+                    console.log('🎯 onAddNew called with type:', type);
+                    console.log('🎯 Setting addPaymentType to: all (showing both options)');
+                    setAddPaymentType('all');
+                    setShowAddWallet(true);
+                  }}
                 />
 
                 {selectedPayment && (
@@ -431,6 +681,21 @@ function MakePayment() {
           </p>
         </div>
 
+        {/* Debug: Log modal state */}
+        {console.log('🎭 Modal State - verificationRequired:', verificationRequired, 'verificationComplete:', verificationComplete, 'Should show modal:', verificationRequired && !verificationComplete)}
+
+        {/* Identity Verification Modal */}
+        {verificationRequired && !verificationComplete && (
+          <div className="modal-overlay">
+            <div className="modal-content verification-modal" onClick={(e) => e.stopPropagation()}>
+              <IdentityVerificationForm
+                onComplete={handleVerificationComplete}
+                onCancel={handleVerificationCancel}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Confirmation Modal */}
         {showConfirmModal && (
           <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
@@ -476,6 +741,35 @@ function MakePayment() {
                 >
                   Confirm & Pay
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Payment Method Modal - Shared Wallet UI */}
+        {showAddWallet && (
+          <div className="modal-overlay" onClick={() => setShowAddWallet(false)}>
+            <div className="modal-content wallet-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>💳 Add Payment Method</h2>
+                <button
+                  className="modal-close"
+                  onClick={() => setShowAddWallet(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="wallet-iframe-container">
+                <SharedWalletDropdown
+                  environment="localdevelopment"
+                  displayMode="full"
+                  paymentType={addPaymentType}
+                  onPaymentSelected={handlePaymentSelected}
+                  onPaymentAdded={handlePaymentAdded}
+                  onError={handleWalletError}
+                />
               </div>
             </div>
           </div>

@@ -52,8 +52,8 @@ exports.initiatePayment = async (req, res, next) => {
       });
     }
 
-    // Check if payment already exists for this period
-    const existingPayment = await RentPayment.findOne({
+    // Check total payments for this period to prevent overpayment
+    const existingPayments = await RentPayment.findAll({
       where: {
         lease_id,
         payment_month,
@@ -64,12 +64,30 @@ exports.initiatePayment = async (req, res, next) => {
       }
     });
 
-    if (existingPayment) {
+    // Calculate total paid for this period
+    const totalPaid = existingPayments.reduce((sum, payment) => {
+      return sum + parseFloat(payment.amount || 0);
+    }, 0);
+
+    // Check if this payment would exceed the monthly rent
+    const requestedAmount = parseFloat(amount);
+    const newTotal = totalPaid + requestedAmount;
+
+    if (newTotal > parseFloat(lease.monthly_rent)) {
       return res.status(400).json({
         success: false,
-        message: 'Payment for this period already exists'
+        message: `Payment exceeds monthly rent. Already paid: $${totalPaid.toFixed(2)}, Monthly rent: $${lease.monthly_rent}, Requested: $${requestedAmount.toFixed(2)}`,
+        details: {
+          totalPaid: totalPaid.toFixed(2),
+          monthlyRent: lease.monthly_rent,
+          requestedAmount: requestedAmount.toFixed(2),
+          availableAmount: (parseFloat(lease.monthly_rent) - totalPaid).toFixed(2)
+        }
       });
     }
+
+    // Log payment attempt
+    console.log(`💰 Payment attempt for lease ${lease_id}: $${requestedAmount} (Period: ${payment_month}/${payment_year}, Total paid: $${totalPaid})`);
 
     // Get tenant info
     const tenant = await User.findByPk(tenantId);

@@ -31,12 +31,6 @@ function Layout({ children, title }) {
           </Link>
         </li>
         <li>
-          <Link to="/tenant/payment-methods">
-            <span className="icon">💳</span>
-            <span>Payment Methods</span>
-          </Link>
-        </li>
-        <li>
           <Link to="/tenant/auto-pay">
             <span className="icon">🔄</span>
             <span>Auto-Pay</span>

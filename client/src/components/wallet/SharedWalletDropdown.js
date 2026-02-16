@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { mockWalletAuth } from '../../services/mockWalletAuth';
+import { useDynamicFieldControl, getApplicationInfoFromToken } from './DynamicFieldController';
 import './SharedWalletDropdown.css';
 
 /**
@@ -110,6 +111,98 @@ function SharedWalletDropdown({
   }, [scriptLoaded, onError]);
 
   /**
+   * Intercept fetch calls to detect successful payment additions
+   */
+  useEffect(() => {
+    if (!scriptLoaded) return;
+
+    // Store original fetch
+    const originalFetch = window.fetch;
+
+    // Override fetch to intercept Shared Wallet API calls
+    window.fetch = async (...args) => {
+      const [url, options] = args;
+
+      try {
+        const response = await originalFetch(...args);
+
+        // Check if this is a payment instrument addition API call
+        const isCardAddition = url.includes('/SharedWallet/card');
+        const isBankAddition = url.includes('/SharedWallet/bankaccount');
+        const isSuccess = response.ok && (response.status === 200 || response.status === 201);
+
+        if ((isCardAddition || isBankAddition) && isSuccess && options?.method === 'POST') {
+          console.log('✅ Payment instrument added successfully via API');
+
+          // Clone the response to read it
+          const clonedResponse = response.clone();
+          const data = await clonedResponse.json();
+
+          // Show success message
+          const successMessage = document.createElement('div');
+          successMessage.className = 'wallet-success-toast';
+          successMessage.innerHTML = `
+            <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10000; display: flex; align-items: center; gap: 12px; font-family: system-ui, -apple-system, sans-serif;">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span style="font-weight: 500;">Payment method added successfully!</span>
+            </div>
+          `;
+          document.body.appendChild(successMessage);
+
+          // Remove after 3 seconds
+          setTimeout(() => {
+            successMessage.remove();
+          }, 3000);
+
+          // Trigger refresh of wallet
+          setTimeout(() => {
+            if (walletRef.current) {
+              console.log('🔄 Refreshing wallet after payment addition...');
+              walletRef.current.loadPaymentInstruments?.();
+
+              // Also try to close the modal if it exists
+              const shadowRoot = walletRef.current.shadowRoot;
+              if (shadowRoot) {
+                const closeButton = shadowRoot.querySelector('[class*="close"], [class*="cancel"], button[type="button"]');
+                if (closeButton) {
+                  console.log('🚪 Closing payment form modal...');
+                  closeButton.click();
+                }
+              }
+            }
+
+            // Trigger callback if provided
+            if (onPaymentAdded) {
+              onPaymentAdded({
+                type: isCardAddition ? 'card' : 'bank',
+                ...data
+              });
+            }
+
+            // Dispatch custom event
+            const eventName = isCardAddition ? 'cardAdded' : 'bankAccountAdded';
+            const customEvent = new CustomEvent(eventName, { detail: data });
+            document.dispatchEvent(customEvent);
+          }, 500);
+        }
+
+        return response;
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    };
+
+    // Cleanup: restore original fetch
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [scriptLoaded, onPaymentAdded]);
+
+  /**
    * Setup event listeners for wallet events
    */
   useEffect(() => {
@@ -134,6 +227,14 @@ function SharedWalletDropdown({
           ...event.detail
         });
       }
+
+      // Force reload the wallet after card is added
+      setTimeout(() => {
+        if (walletRef.current) {
+          console.log('🔄 Reloading wallet after card addition...');
+          walletRef.current.loadPaymentInstruments?.();
+        }
+      }, 500);
     };
 
     // Bank account added event
@@ -146,6 +247,14 @@ function SharedWalletDropdown({
           ...event.detail
         });
       }
+
+      // Force reload the wallet after bank account is added
+      setTimeout(() => {
+        if (walletRef.current) {
+          console.log('🔄 Reloading wallet after bank account addition...');
+          walletRef.current.loadPaymentInstruments?.();
+        }
+      }, 500);
     };
 
     // Error event
@@ -183,6 +292,112 @@ function SharedWalletDropdown({
     };
   }, [scriptLoaded, onPaymentSelected, onPaymentAdded, onError]);
 
+  /**
+   * Apply dynamic field visibility based on integration model
+   */
+  useDynamicFieldControl(tokens, walletRef);
+
+  /**
+   * Make form fields optional except essential tokenization fields
+   * Required: Name on Card, Card Number, Expiry Date, CVV
+   * Optional: Everything else (billing address, nickname, etc.)
+   */
+  useEffect(() => {
+    if (!walletRef.current || !scriptLoaded) return;
+
+    const makeFieldsOptional = () => {
+      console.log('🔧 Making optional fields non-required...');
+
+      // Try to access shadow DOM
+      const walletElement = walletRef.current;
+      const shadowRoot = walletElement.shadowRoot;
+
+      if (!shadowRoot) {
+        console.log('⚠️ No shadow root found, trying regular DOM...');
+        return;
+      }
+
+      // Required field names (keep these as required)
+      const requiredFields = [
+        'cardHolderName',
+        'cardNumber',
+        'expiryMonth',
+        'expiryYear',
+        'cvv',
+        'accountHolderName',
+        'routingNumber',
+        'accountNumber'
+      ];
+
+      // Find all input, select, and textarea elements
+      const allInputs = shadowRoot.querySelectorAll('input, select, textarea');
+
+      console.log(`📝 Found ${allInputs.length} form fields`);
+
+      allInputs.forEach(input => {
+        const fieldName = input.name || input.id || '';
+        const isRequired = requiredFields.some(req =>
+          fieldName.toLowerCase().includes(req.toLowerCase())
+        );
+
+        if (!isRequired) {
+          // Remove required attribute
+          input.removeAttribute('required');
+
+          // Remove aria-required
+          input.removeAttribute('aria-required');
+
+          // Hide asterisks by looking for labels
+          const label = shadowRoot.querySelector(`label[for="${input.id}"]`);
+          if (label) {
+            const asterisk = label.querySelector('.required, [class*="asterisk"]');
+            if (asterisk) {
+              asterisk.style.display = 'none';
+            }
+          }
+
+          console.log(`✅ Made ${fieldName || 'unnamed field'} optional`);
+        }
+      });
+
+      // Also remove validation error messages for optional fields
+      const errorMessages = shadowRoot.querySelectorAll('[class*="error"], [class*="invalid"]');
+      errorMessages.forEach(error => {
+        const parentInput = error.closest('.form-group, .field-group')?.querySelector('input, select, textarea');
+        if (parentInput) {
+          const fieldName = parentInput.name || parentInput.id || '';
+          const isRequired = requiredFields.some(req =>
+            fieldName.toLowerCase().includes(req.toLowerCase())
+          );
+
+          if (!isRequired) {
+            error.style.display = 'none';
+          }
+        }
+      });
+    };
+
+    // Wait for component to fully render, then modify fields
+    const timer = setTimeout(makeFieldsOptional, 1000);
+
+    // Also observe for dynamic changes (modal opening, tab switching)
+    const observer = new MutationObserver(() => {
+      makeFieldsOptional();
+    });
+
+    if (walletRef.current.shadowRoot) {
+      observer.observe(walletRef.current.shadowRoot, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [scriptLoaded]);
+
   // Loading state
   if (loading) {
     return (
@@ -219,9 +434,13 @@ function SharedWalletDropdown({
   }
 
   // Render wallet component
-  // Try using localdevelopment environment but override the base URL
-  // The wallet UI might not support 'custom' environment properly
-  const baseUrl = window.location.origin; // http://localhost:3000
+  // In localdevelopment mode, wallet UI expects backend on specific port
+  // We provide both baseurl and api-base-url to ensure it works
+  const apiBaseUrl = "http://localhost:50155"; // Direct backend URL
+
+  // Debug logging to verify payment type
+  console.log('🔍 SharedWalletDropdown - paymentType prop:', paymentType);
+  console.log('🔍 SharedWalletDropdown - displayMode:', displayMode);
 
   return (
     <div className="shared-wallet-container">
@@ -230,7 +449,7 @@ function SharedWalletDropdown({
         operations-token={tokens.operationsToken}
         user-scoped-access-token={tokens.userScopedAccessToken}
         environment="localdevelopment"
-        baseurl={baseUrl}
+        api-base-url={apiBaseUrl}
         display-mode={displayMode}
         payment-type={paymentType}
         select-payment={selectPayment}

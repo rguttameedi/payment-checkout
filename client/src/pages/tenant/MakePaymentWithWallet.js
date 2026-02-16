@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tenantService } from '../../services/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Layout from '../../components/layout/Layout';
-import SharedWalletDropdown from '../../components/wallet/SharedWalletDropdown';
+import PaymentMethodSelector from '../../components/payment/PaymentMethodSelector';
+import AddPaymentForm from '../../components/wallet/AddPaymentForm';
+import DiagnosticCheck from '../../components/payment/DiagnosticCheck';
 import '../../assets/css/MakePayment.css';
 
 /**
@@ -22,6 +24,11 @@ function MakePaymentWithWallet() {
 
   const [leaseInfo, setLeaseInfo] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
+
+  // State for showing Shared Wallet UI for adding new payment methods
+  const [showAddWallet, setShowAddWallet] = useState(false);
+  const [addPaymentType, setAddPaymentType] = useState('all');
+  const paymentSelectorRef = useRef(null);
 
   const [formData, setFormData] = useState({
     lease_id: '',
@@ -91,8 +98,23 @@ function MakePaymentWithWallet() {
 
     toast.success(`${paymentDetail.type === 'card' ? 'Card' : 'Bank account'} added successfully!`);
 
+    // Close the add wallet UI
+    setShowAddWallet(false);
+
+    // Refresh the payment method selector to show the newly added payment
+    // Trigger a re-fetch by updating the key or calling refresh method
+    if (paymentSelectorRef.current && paymentSelectorRef.current.refresh) {
+      paymentSelectorRef.current.refresh();
+    }
+
     // Optionally auto-select the newly added payment
-    // The wallet UI should automatically select it
+    if (paymentDetail.paymentInstrumentToken || paymentDetail.paymentMethodId) {
+      setSelectedPayment(paymentDetail);
+      setFormData({
+        ...formData,
+        payment_method_token: paymentDetail.paymentInstrumentToken || paymentDetail.paymentMethodId
+      });
+    }
   };
 
   /**
@@ -255,6 +277,7 @@ function MakePaymentWithWallet() {
 
   return (
     <Layout>
+      <DiagnosticCheck />
       <div className="make-payment-container">
         <div className="page-header">
           <h1>💳 Make a Payment</h1>
@@ -340,12 +363,9 @@ function MakePaymentWithWallet() {
               </div>
             </div>
 
-            {/* Shared Wallet UI - Payment Method Selection */}
+            {/* Payment Method Selection */}
             <div className="form-section">
-              <h3>💳 Select Payment Method</h3>
-              <p className="section-description">
-                Choose an existing payment method or add a new one using the Shared Wallet UI below.
-              </p>
+              <h3>💳 Payment Method</h3>
 
               {validationErrors.payment_method && (
                 <div className="alert alert-error">
@@ -353,13 +373,17 @@ function MakePaymentWithWallet() {
                 </div>
               )}
 
-              <SharedWalletDropdown
-                environment="localdevelopment"
-                displayMode="full"
-                paymentType="all"
+              <PaymentMethodSelector
+                ref={paymentSelectorRef}
                 onPaymentSelected={handlePaymentSelected}
-                onPaymentAdded={handlePaymentAdded}
-                onError={handleWalletError}
+                onAddNew={(type) => {
+                  // Show Shared Wallet UI with both payment options
+                  // Always show 'all' to display both card and bank options
+                  console.log('🎯 onAddNew called with type:', type);
+                  console.log('🎯 Setting addPaymentType to: all (showing both options)');
+                  setAddPaymentType('all');
+                  setShowAddWallet(true);
+                }}
               />
 
               {selectedPayment && (
@@ -462,6 +486,32 @@ function MakePaymentWithWallet() {
                 >
                   Confirm & Pay
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Payment Method Modal - Shared Wallet UI */}
+        {showAddWallet && (
+          <div className="modal-overlay" onClick={() => setShowAddWallet(false)}>
+            <div className="modal-content wallet-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>💳 Add Payment Method</h2>
+                <button
+                  className="modal-close"
+                  onClick={() => setShowAddWallet(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="wallet-iframe-container">
+                <AddPaymentForm
+                  paymentType={addPaymentType}
+                  onSuccess={handlePaymentAdded}
+                  onCancel={() => setShowAddWallet(false)}
+                />
               </div>
             </div>
           </div>

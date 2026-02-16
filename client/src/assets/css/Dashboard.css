@@ -3,6 +3,8 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
 }
 
 .dashboard-container.admin {
@@ -12,12 +14,20 @@
 /* Welcome Section */
 .welcome-section {
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .welcome-section h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.5rem;
 }
 
@@ -36,30 +46,80 @@
 
 .stat-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
 }
 
 .stat-card.highlight {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+  border: none;
+}
+
+.stat-card.highlight::before {
+  background: rgba(255, 255, 255, 0.2);
+  height: 4px;
+}
+
+.stat-card.highlight:hover {
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .stat-card.financial {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
+  box-shadow: 0 8px 24px rgba(245, 87, 108, 0.25);
+  border: none;
+}
+
+.stat-card.financial::before {
+  background: rgba(255, 255, 255, 0.2);
+  height: 4px;
+}
+
+.stat-card.financial:hover {
+  box-shadow: 0 12px 32px rgba(245, 87, 108, 0.35);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .stat-icon {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.2));
 }
 
 .stat-content h3 {
@@ -78,6 +138,19 @@
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #4a5568 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-card.highlight .stat-value,
+.stat-card.financial .stat-value {
+  background: white;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: white;
+  background-clip: text;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .stat-label {
@@ -108,15 +181,22 @@
 /* Section Cards */
 .section-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
   overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .section-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(to bottom, rgba(102, 126, 234, 0.02) 0%, transparent 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -137,27 +217,42 @@
 }
 
 .count-badge {
-  background: #f0f0f0;
-  color: #666;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.875rem;
   margin-left: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .view-all-link {
   color: #667eea;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.view-all-link::after {
+  content: ' →';
+  transition: transform 0.3s ease;
+  display: inline-block;
 }
 
 .view-all-link:hover {
-  text-decoration: underline;
+  color: #764ba2;
+}
+
+.view-all-link:hover::after {
+  transform: translateX(4px);
 }
 
 .section-content {
   padding: 1.5rem;
+  background: linear-gradient(to bottom, transparent 0%, rgba(102, 126, 234, 0.01) 100%);
 }
 
 /* Info Grid */
@@ -171,7 +266,13 @@
   display: flex;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  padding-left: 0.5rem;
+  background: linear-gradient(to right, rgba(102, 126, 234, 0.03) 0%, transparent 100%);
 }
 
 .info-label {
@@ -181,7 +282,10 @@
 
 .info-value {
   font-weight: 600;
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-align: right;
 }
 
@@ -203,10 +307,11 @@
 
 .chart-bar {
   height: 60px;
-  background: #f0f0f0;
-  border-radius: 8px;
+  background: linear-gradient(to right, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .chart-fill {
@@ -214,12 +319,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.3s ease;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .chart-fill.occupied {
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
   color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.chart-fill.occupied::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .chart-label {
@@ -241,19 +364,28 @@
 .occupancy-color {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.occupancy-item:hover .occupancy-color {
+  transform: scale(1.2);
 }
 
 .occupancy-color.occupied {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .occupancy-color.vacant {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .occupancy-color.maintenance {
-  background: #ffc107;
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
 }
 
 .occupancy-text {
@@ -281,19 +413,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .status-icon.occupied {
-  background: #e8f5e9;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.status-icon.occupied:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.2);
 }
 
 .status-icon.vacant {
-  background: #fff3e0;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+}
+
+.status-icon.vacant:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.2);
 }
 
 .status-icon.maintenance {
-  background: #fff9c4;
+  background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+}
+
+.status-icon.maintenance:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.2);
 }
 
 .status-details {
@@ -322,12 +471,14 @@
 }
 
 .spinner {
-  border: 4px solid #f0f0f0;
+  border: 4px solid rgba(102, 126, 234, 0.1);
   border-top: 4px solid #667eea;
+  border-right: 4px solid #764ba2;
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  animation: spin 1s linear infinite;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 @keyframes spin {
@@ -335,9 +486,275 @@
   100% { transform: rotate(360deg); }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .loading-container p {
   margin-top: 1rem;
   color: #666;
+}
+
+/* Premium Animations */
+.stat-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.section-card {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.welcome-section {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Rent Balance Card */
+.rent-balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  color: white;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.rent-balance-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.rent-balance-card:hover {
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+.rent-balance-header {
+  padding: 1rem 1.5rem 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rent-balance-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.rent-period-label {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin: 0;
+  font-weight: 500;
+}
+
+.rent-balance-content {
+  padding: 1.25rem 1.5rem;
+}
+
+/* Balance Summary Grid */
+.balance-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.balance-item {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.balance-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.balance-item.total {
+  border-left: 3px solid #fff;
+}
+
+.balance-item.paid {
+  border-left: 3px solid #4caf50;
+}
+
+.balance-item.remaining {
+  border-left: 3px solid #ff9800;
+}
+
+.balance-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balance-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.balance-value.paid-amount {
+  color: #4caf50;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.balance-value.remaining-amount {
+  color: #ff9800;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.balance-value.zero-balance {
+  color: #4caf50;
+  font-size: 1.375rem;
+}
+
+/* Payment Progress Bar */
+.payment-progress {
+  margin-bottom: 1rem;
+}
+
+.progress-bar-container {
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.5rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+.progress-percentage {
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  text-align: center;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Balance Action Button */
+.balance-action {
+  margin-top: 1rem;
+}
+
+.btn-block {
+  width: 100%;
+  display: block;
+  text-align: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  background: white;
+  color: #667eea;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-block::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-block:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(to right, white 0%, #f8f9ff 100%);
+}
+
+.text-success {
+  color: #4caf50;
+  font-weight: 600;
 }
 
 /* Responsive */
@@ -356,5 +773,23 @@
 
   .dashboard-container {
     padding: 1rem;
+  }
+
+  .balance-summary {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .rent-balance-header,
+  .rent-balance-content {
+    padding: 1rem;
+  }
+
+  .balance-value {
+    font-size: 1.25rem;
+  }
+
+  .balance-item {
+    padding: 0.875rem;
   }
 }

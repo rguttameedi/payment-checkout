@@ -94,6 +94,88 @@ function TenantDashboard() {
   return (
     <Layout title="Tenant Dashboard">
       <div className="dashboard-container">
+        {/* Rent Balance Tracker - Featured Card */}
+        {nextPayment && (
+          <div className="rent-balance-card">
+            <div className="rent-balance-header">
+              <h2>💰 Current Rent Period</h2>
+              <p className="rent-period-label">
+                {nextPayment.dueDate && new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+
+            <div className="rent-balance-content">
+              {/* Balance Summary */}
+              <div className="balance-summary">
+                <div className="balance-item total">
+                  <span className="balance-label">Monthly Rent</span>
+                  <span className="balance-value">{formatCurrency(nextPayment.totalDue)}</span>
+                </div>
+
+                <div className="balance-item paid">
+                  <span className="balance-label">Paid So Far</span>
+                  <span className="balance-value paid-amount">
+                    {nextPayment.amountPaid ? formatCurrency(nextPayment.amountPaid) : '$0.00'}
+                  </span>
+                </div>
+
+                <div className="balance-item remaining">
+                  <span className="balance-label">
+                    {nextPayment.isPaid ? 'Fully Paid ✓' : 'Remaining Balance'}
+                  </span>
+                  <span className={`balance-value ${nextPayment.isPaid ? 'zero-balance' : 'remaining-amount'}`}>
+                    {formatCurrency(nextPayment.amount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="payment-progress">
+                <div className="progress-bar-container">
+                  <div
+                    className="progress-bar-fill"
+                    style={{
+                      width: `${nextPayment.totalDue > 0 ? (nextPayment.amountPaid / nextPayment.totalDue) * 100 : 0}%`
+                    }}
+                  >
+                    {nextPayment.totalDue > 0 && (nextPayment.amountPaid / nextPayment.totalDue) * 100 > 10 && (
+                      <span className="progress-percentage">
+                        {Math.round((nextPayment.amountPaid / nextPayment.totalDue) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="progress-label">
+                  {nextPayment.isPaid ? (
+                    <span className="text-success">🎉 Rent fully paid for this period!</span>
+                  ) : (
+                    <span>
+                      {Math.round((nextPayment.amountPaid / nextPayment.totalDue) * 100)}% paid
+                      {nextPayment.daysUntilDue !== undefined && (
+                        <> • Due in {nextPayment.daysUntilDue > 0
+                          ? `${nextPayment.daysUntilDue} day${nextPayment.daysUntilDue !== 1 ? 's' : ''}`
+                          : nextPayment.daysUntilDue === 0
+                          ? 'today'
+                          : `${Math.abs(nextPayment.daysUntilDue)} day${Math.abs(nextPayment.daysUntilDue) !== 1 ? 's' : ''} ago`}
+                        </>
+                      )}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              {!nextPayment.isPaid && (
+                <div className="balance-action">
+                  <Link to="/tenant/make-payment" className="btn btn-primary btn-block">
+                    Pay {formatCurrency(nextPayment.amount)} Now
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Quick Stats Cards */}
         <div className="stats-grid">
           {/* Next Payment Card */}
@@ -243,9 +325,21 @@ function TenantDashboard() {
                 <span className="btn-icon">💰</span>
                 Manage Payment Methods
               </Link>
-              <Link to="/tenant/auto-pay" className="btn btn-secondary">
+              <Link to="/tenant/autopay-setup" className="btn btn-secondary">
                 <span className="btn-icon">🔄</span>
                 {autoPayEnabled ? 'Update Auto-Pay' : 'Set Up Auto-Pay'}
+              </Link>
+              <Link to="/tenant/split-rent" className="btn btn-secondary">
+                <span className="btn-icon">💸</span>
+                Split Rent Payments
+              </Link>
+              <Link to="/tenant/roommate-split" className="btn btn-secondary">
+                <span className="btn-icon">👥</span>
+                Split with Roommates
+              </Link>
+              <Link to="/tenant/flexible-payment" className="btn btn-secondary">
+                <span className="btn-icon">📅</span>
+                Flexible Payment Plans
               </Link>
               <Link to="/tenant/payments" className="btn btn-secondary">
                 <span className="btn-icon">📊</span>

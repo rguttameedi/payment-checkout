@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Field Rendering - Leadership Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
+        }
+
+        .tagline {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+        }
+
+        .model-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .model-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .model-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            color: white;
+        }
+
+        .badge-merchant {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .badge-client {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .badge-resident {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .field-count {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 15px 0;
+        }
+
+        .field-count-label {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .field-list {
+            margin-top: 20px;
+        }
+
+        .field-section {
+            margin-bottom: 20px;
+        }
+
+        .field-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-item {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .field-item:hover {
+            transform: translateX(5px);
+        }
+
+        .field-item.visible {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .field-item.hidden {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .field-icon {
+            font-size: 16px;
+        }
+
+        .use-case {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .use-case-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .use-case-text {
+            font-size: 13px;
+            color: #5a6c7d;
+            line-height: 1.5;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 16px;
+        }
+
+        .value-props {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 1800px;
+            margin: 40px auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .value-props h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .value-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .value-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .value-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .value-desc {
+            font-size: 13px;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1400px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .value-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .animation-enter {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header animation-enter">
+        <h1>🎯 Dynamic Field Rendering</h1>
+        <p>One Iframe • Three Models • Infinite Possibilities</p>
+    </div>
+
+    <div class="tagline animation-enter">
+        ✅ ONE CODEBASE • ✅ THREE CONFIGURATIONS • ✅ AUTOMATIC ADAPTATION
+    </div>
+
+    <div class="comparison-grid">
+        <!-- DirectMerchant Card -->
+        <div class="model-card animation-enter" style="animation-delay: 0.1s">
+            <div class="model-header">
+                <div class="model-title">DirectMerchant</div>
+                <div class="model-subtitle">Simple Checkout</div>
+                <span class="model-badge badge-merchant">MINIMAL FIELDS</span>
+            </div>
+
+            <div class="field-count">9</div>
+            <div class="field-count-label">Visible Fields</div>
+
+            <div class="field-list">
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ✅ Required Fields (4)
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">💳</span>
+                        Card Number
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">👤</span>
+                        Card Holder Name
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">📅</span>
+                        Expiry Date
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🔒</span>
+                        CVV
+                    </div>
+                </div>
+
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ⚪ Optional Fields (5)
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🏠</span>
+                        Billing Address
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🌆</span>
+                        City
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">📍</span>
+                        State
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">📮</span>
+                        ZIP Code
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🏷️</span>
+                        Nick Name
+                    </div>
+                </div>
+
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ❌ Hidden Fields (9)
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        First Name
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Last Name
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Email
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Phone
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Date of Birth
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Country
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Address Line 2
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Government ID
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        SSN
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <div class="use-case-title">💡 Perfect For</div>
+                <div class="use-case-text">
+                    Coffee shops, retail stores, simple e-commerce. Quick checkout with minimal friction. Higher conversion rates.
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Required</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Optional</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">9</div>
+                    <div class="stat-label">Hidden</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ClientDirect Card -->
+        <div class="model-card animation-enter" style="animation-delay: 0.2s">
+            <div class="model-header">
+                <div class="model-title">ClientDirect</div>
+                <div class="model-subtitle">Property Management</div>
+                <span class="model-badge badge-client">EXTENDED FIELDS</span>
+            </div>
+
+            <div class="field-count">16</div>
+            <div class="field-count-label">Visible Fields</div>
+
+            <div class="field-list">
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ✅ All DirectMerchant Fields +7 More
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>First Name</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Last Name</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Email Address</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Phone Number</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Date of Birth</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Country</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">✨</span>
+                        <strong>Full Address</strong>
+                    </div>
+                </div>
+
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ❌ Still Hidden (2)
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        Government ID
+                    </div>
+                    <div class="field-item hidden">
+                        <span class="field-icon">🚫</span>
+                        SSN
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <div class="use-case-title">💡 Perfect For</div>
+                <div class="use-case-text">
+                    Property management companies, lease agreements, tenant communication. Need contact info but not full identity verification.
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Required</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">1</div>
+                    <div class="stat-label">Optional</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Hidden</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ResidentDirect Card -->
+        <div class="model-card animation-enter" style="animation-delay: 0.3s">
+            <div class="model-header">
+                <div class="model-title">ResidentDirect</div>
+                <div class="model-subtitle">Full Onboarding</div>
+                <span class="model-badge badge-resident">ALL FIELDS</span>
+            </div>
+
+            <div class="field-count">18</div>
+            <div class="field-count-label">Visible Fields</div>
+
+            <div class="field-list">
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ✅ All ClientDirect Fields +2 More
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🆔</span>
+                        <strong>Government ID</strong>
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">🔐</span>
+                        <strong>Social Security Number</strong>
+                    </div>
+                </div>
+
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ✅ Everything Visible
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">💯</span>
+                        Complete Identity Verification
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">💯</span>
+                        Full Contact Information
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">💯</span>
+                        Complete Billing Details
+                    </div>
+                    <div class="field-item visible">
+                        <span class="field-icon">💯</span>
+                        All Payment Information
+                    </div>
+                </div>
+
+                <div class="field-section">
+                    <div class="field-section-title">
+                        ✨ No Hidden Fields
+                    </div>
+                    <div style="text-align: center; padding: 20px; color: #4caf50; font-weight: 600;">
+                        🎉 All 18 fields are visible!
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <div class="use-case-title">💡 Perfect For</div>
+                <div class="use-case-text">
+                    New resident onboarding, background checks, credit checks. Full identity and income verification required.
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value">17</div>
+                    <div class="stat-label">Required</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">1</div>
+                    <div class="stat-label">Optional</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Hidden</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Value Section -->
+    <div class="value-props animation-enter" style="animation-delay: 0.4s">
+        <h2>💎 Business Value</h2>
+        <div class="value-grid">
+            <div class="value-item">
+                <div class="value-icon">⚡</div>
+                <div class="value-title">Faster Integrations</div>
+                <div class="value-desc">
+                    5 minutes instead of 5 weeks. Just set the integration model and go.
+                </div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">😊</div>
+                <div class="value-title">Better UX</div>
+                <div class="value-desc">
+                    Right fields for right users. Higher conversion, better data quality.
+                </div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">🔧</div>
+                <div class="value-title">Easier Maintenance</div>
+                <div class="value-desc">
+                    One codebase. Fix bugs once. Deploy everywhere. Consistent security.
+                </div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">📈</div>
+                <div class="value-title">Infinite Scale</div>
+                <div class="value-desc">
+                    Add new models in minutes. Custom fields per customer. Multi-tenant ready.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer animation-enter" style="animation-delay: 0.5s">
+        <p>🎯 One Codebase • Three Models • Powered by Token-Based Configuration</p>
+    </div>
+</body>
+</html>

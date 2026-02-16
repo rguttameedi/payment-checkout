@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { tenantService } from '../../services/api';
 import Layout from '../../components/layout/Layout';
 import '../../assets/css/PaymentMethods.css';
 
 function TenantPaymentMethods() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [cameFromAddAction, setCameFromAddAction] = useState(false);
   const [formData, setFormData] = useState({
     payment_type: 'card',
     nickname: '',
@@ -40,6 +44,40 @@ function TenantPaymentMethods() {
   useEffect(() => {
     fetchPaymentMethods();
   }, []);
+
+  // Check URL parameters and auto-open add modal if needed
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const type = searchParams.get('type');
+
+    if (action === 'add') {
+      // Track that user came from "add" action
+      setCameFromAddAction(true);
+
+      // Set the payment type based on URL parameter
+      if (type === 'bank') {
+        setFormData(prev => ({ ...prev, payment_type: 'ach' }));
+      } else {
+        setFormData(prev => ({ ...prev, payment_type: 'card' }));
+      }
+
+      // Open the add modal
+      setShowAddModal(true);
+
+      // Clean up URL parameters
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Handle closing the add modal
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+
+    // If user came from "add" action, navigate back to previous page
+    if (cameFromAddAction) {
+      navigate(-1); // Go back to Make Payment page
+    }
+  };
 
   const fetchPaymentMethods = async () => {
     try {
@@ -120,9 +158,8 @@ function TenantPaymentMethods() {
       // Refresh list
       await fetchPaymentMethods();
 
-      // Close modal and reset form
-      setShowAddModal(false);
-      resetForm();
+      // Close modal and navigate back if needed
+      handleCloseAddModal();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add payment method');
     } finally {
@@ -333,12 +370,12 @@ function TenantPaymentMethods() {
 
         {/* Add Payment Method Modal */}
         {showAddModal && (
-          <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-overlay" onClick={handleCloseAddModal}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h2>Add Payment Method</h2>
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={handleCloseAddModal}
                   className="btn-close"
                 >
                   ×
@@ -619,7 +656,7 @@ function TenantPaymentMethods() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    onClick={() => setShowAddModal(false)}
+                    onClick={handleCloseAddModal}
                     className="btn btn-secondary"
                     disabled={submitting}
                   >

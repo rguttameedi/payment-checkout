@@ -1,0 +1,190 @@
+/* Import a modern font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+.add-new-payment {
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.add-new-payment h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 700; /* Make the title bold */
+}
+
+/* Safari-compatible select dropdown styling */
+.add-new-payment select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    padding-right: 30px;
+}
+
+.add-new-payment select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.add-new-payment select option {
+    padding: 8px;
+    background-color: white;
+    color: #333;
+}
+
+.add-new-payment select option:hover {
+    background-color: #f0f0f0;
+}
+.dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 0px;
+}
+ 
+.dropdown-header {
+  all:unset;
+  display: block;
+  width: 90%;
+  padding: 8px;
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: white;
+  margin-bottom: 0px;
+  transition: border 0.2s ease;
+}
+
+.dropdown-header:focus {
+  outline: none;
+  border: 1px solid #282829;
+}
+ 
+.dropdown-list {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+  opacity: 1;
+  transform: none;
+  transform-origin: 100px 0px;
+  transition: opacity 263ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 175ms cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 150px;
+  list-style-type: none;
+  padding-left: 0px;
+  margin: 0px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  min-width: 250px;
+}
+ 
+.dropdown-item {
+  padding: 8px 10px;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #282829 !important;
+  cursor: pointer;
+}
+ 
+.dropdown-item:hover {
+  background-color:#e9eaeb;
+}
+
+.dropdown-content {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+.dropdown-button {
+  all: unset;
+  width: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+.addressVerification-message-warning-info,
+.addressVerification-message-error-info {
+    padding: 0px 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin: 0px 0px 16px 0px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+    overflow: visible !important;
+    max-height: none;
+    align-items: flex-start;
+    min-width: 297px;
+    min-height: 103px;
+}
+
+.addressVerification-message-warning-info {
+     background-color: #E3F2FC;
+    border-left: 13px solid #0076CC;
+  
+}
+.addressVerification-message-error-info {
+    background-color: #FFEBEE;
+    border-left: 13px solid #D01A1F;
+}
+.addressVerification-message-notice-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-top: 26px;
+}
+.addressVerification-message-warning-content {
+    white-space: pre-line;
+    margin: 0px;
+    word-break: break-word;
+    font-weight: 400;
+}
+.addressVerification-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: #6B7280;
+    cursor: pointer;
+    margin-top: 22px;
+}
+
+.addressVerification-close-btn:hover{
+    color: #374151;
+}
+
+.required-asterisk {
+  color: red;
+}
+
+.add-new-payment date-picker .date-picker-wrapper {
+      margin-bottom: 0px !important;
+}
+
+
+
+/* Remove danger symbol from inline validation error messages */
+.error::before,
+.error::after {
+  display: none !important;
+}

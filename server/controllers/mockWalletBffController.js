@@ -16,6 +16,7 @@
 const { PaymentMethod } = require('../models');
 const crypto = require('crypto');
 const axios = require('axios');
+const { INTEGRATION_MODELS, getFieldConfiguration, getAllowedPaymentTypes } = require('../config/integrationModels');
 
 // Configuration
 const WALLET_API_MODE = process.env.WALLET_API_MODE || 'mock'; // 'mock' | 'real' | 'hybrid'
@@ -193,7 +194,15 @@ exports.acquireUserScopedToken = async (req, res) => {
       });
     }
 
-    const { realpage_id, upp_wallet_token, client_metadata } = req.body;
+    const {
+      realpage_id,
+      upp_wallet_token,
+      client_metadata,
+      application_name,
+      application_guid,
+      integration_model,
+      allowed_payment_types
+    } = req.body;
 
     if (!realpage_id || !upp_wallet_token) {
       return res.status(400).json({
@@ -202,11 +211,31 @@ exports.acquireUserScopedToken = async (req, res) => {
       });
     }
 
-    // Generate mock encrypted user scoped token
+    // Determine integration model (default to DIRECT_MERCHANT if not specified)
+    const integrationModel = integration_model || INTEGRATION_MODELS.DIRECT_MERCHANT;
+
+    // Get allowed payment types for this integration model
+    const allowedPaymentTypes = allowed_payment_types || getAllowedPaymentTypes(integrationModel);
+
+    // Generate mock encrypted user scoped token with enhanced metadata
     const tokenData = {
       realpage_id,
       timestamp: Date.now(),
-      client_metadata: client_metadata || {}
+      client_metadata: client_metadata || {},
+
+      // Enhanced metadata for dynamic field rendering
+      application: {
+        name: application_name || 'Rent Payment Portal',
+        guid: application_guid || crypto.randomUUID(),
+        integration_model: integrationModel,
+        allowed_payment_types: allowedPaymentTypes
+      },
+
+      // Field configuration based on integration model
+      field_config: {
+        card: getFieldConfiguration(integrationModel, 'card'),
+        ach: getFieldConfiguration(integrationModel, 'ach')
+      }
     };
 
     const user_scoped_access_token = Buffer.from(JSON.stringify(tokenData)).toString('base64');

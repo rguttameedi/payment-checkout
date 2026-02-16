@@ -1,0 +1,136 @@
+.action-modal .modal-footer .button-box .primary-btn, .action-modal .modal-footer .button-box .secondarybtn {
+  background-image: none;
+  border-radius: 12px;
+  box-shadow: none;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  height: 48px;
+  line-height: 14px;
+  padding: 16px;
+  text-align: center;
+  text-shadow: none;
+  cursor: pointer;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.action-modal {
+  position: absolute;
+  top: 80px;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  opacity: 1;
+  padding: 40px;
+}
+.action-modal .modal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 237px;
+  margin: 0 auto;
+}
+.action-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e9eaeb;
+}
+.action-modal .modal-header h3 {
+  font-family: "p22-mackinac-pro";
+  font-weight: 800;
+  font-size: 24px;
+  margin: 0;
+  line-height: 27px;
+  color: #282829;
+}
+.action-modal .modal-body {
+  padding: 0;
+}
+.action-modal .modal-body .dialogContentText {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #282829;
+  line-height: 21px;
+}
+.action-modal .modal-body .highlight {
+  font-weight: 700;
+  font-style: normal;
+}
+.action-modal .modal-body .time-highlight {
+  font-weight: 700;
+  color: #d01a1f;
+}
+.action-modal .modal-footer {
+  background-color: transparent;
+  box-shadow: none;
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.action-modal .modal-footer .button-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+.action-modal .modal-footer .button-box .secondarybtn {
+  background-color: #FFFFFF;
+  border: 1.5px solid #e9eaeb;
+  color: #282829;
+  width: 100%;
+}
+.action-modal .modal-footer .button-box .primary-btn {
+  background-color: #282829;
+  border: 1px solid #282829;
+  color: #FFFFFF;
+  width: 100%;
+}
+.action-modal .modal-footer .button-box .primary-btn[disabled] {
+  background-color: #e9eaeb;
+  border-color: #e9eaeb;
+  color: #9ba3a7;
+  cursor: default;
+}
+@media (min-width: 545px) {
+  .action-modal {
+    padding: 40px;
+  }
+  .action-modal .modal-container {
+    width: 440px;
+    margin: 0 auto;
+    gap: 24px;
+  }
+  .action-modal .modal-footer {
+    align-items: center;
+  }
+  .action-modal .modal-footer .button-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+  }
+  .action-modal .modal-footer .button-box .secondarybtn,
+  .action-modal .modal-footer .button-box .primary-btn {
+    width: fit-content;
+  }
+}

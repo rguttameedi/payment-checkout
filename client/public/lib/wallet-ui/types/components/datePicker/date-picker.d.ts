@@ -1,0 +1,32 @@
+import { EventEmitter } from '../../stencil-public-runtime';
+export declare class DatePicker {
+    el: HTMLElement;
+    value: string;
+    placeholder: string;
+    inputId: string;
+    minAge?: number;
+    dateChange: EventEmitter<string>;
+    inputValue: string;
+    isDatePickerOpen: boolean;
+    selectedDate: Date | null;
+    isYearPickerOpen: boolean;
+    isSelectingMonth: boolean;
+    isSelectingYear: boolean;
+    yearRangeStart: number;
+    private _isOpeningYearPicker;
+    private _isOpeningMonthSelect;
+    valueChanged(newValue: string): void;
+    componentDidLoad(): void;
+    disconnectedCallback(): void;
+    private readonly handleClickOutside;
+    private readonly handleManualInput;
+    private formatDateInput;
+    private parseAndValidateDate;
+    toggleDatePicker: (event?: Event) => void;
+    handleDateSelect: (date: Date, event?: Event) => void;
+    toggleYearPicker: (event?: Event) => void;
+    handleYearRangeChange: (direction: "prev" | "next", event?: Event) => void;
+    handleYearSelect: (year: number, event?: Event) => void;
+    renderDatePicker(): any;
+    render(): any;
+}
