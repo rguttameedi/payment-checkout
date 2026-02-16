@@ -4,11 +4,11 @@ A modern, full-stack rent payment application built for learning and testing pur
 
 ## 🚀 Live Demo
 
-- **Frontend**: `https://payment-checkout.vercel.app` *(Update after Vercel deployment)*
-- **Backend API**: `https://rent-payment-api.onrender.com` *(Update after Render activation)*
+- **Frontend**: `https://rentpaymentporatl.vercel.app` ✅ **LIVE**
+- **Backend API**: `https://rent-payment-api.onrender.com` ⚠️ *(Currently suspended - frontend-only demo available)*
 - **GitHub**: [https://github.com/rguttameedi/payment-checkout](https://github.com/rguttameedi/payment-checkout)
 
-> **Note**: Backend may take 30 seconds to wake up on first request (Render free tier sleeps when idle).
+> **Note**: Frontend is fully functional for UI/UX demonstrations. Backend integration available for local development (see Quick Start below).
 
 ---
 
